@@ -26,7 +26,7 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
   bool? isFollowed = false;
   @override
   void initState() {
-    followStatus();
+    WidgetsBinding.instance.addPostFrameCallback((_) => followStatus());
     super.initState();
   }
 
