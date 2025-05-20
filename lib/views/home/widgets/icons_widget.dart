@@ -24,7 +24,7 @@ class IconsWidget extends StatelessWidget {
           onTap: onTap,
           child: Icon(
             icon,
-            size: 12.5,
+            size: 13,
             color:
                 isLiked
                     ? AppColors.blue

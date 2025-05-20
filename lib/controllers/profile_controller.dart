@@ -42,7 +42,7 @@ class ProfileController extends GetxController {
       type: isFollowed ? 'follow' : 'unfollow',
       senderId: auth.currentUser!.uid,
       receiverId: followingId,
-      message: isFollowed ? 'Started following you.' : 'Unfollowed you.',
+      message: isFollowed ? 'started following you.' : 'unfollowed you.',
     );
 
     return true;

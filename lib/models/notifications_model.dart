@@ -1,45 +1,49 @@
 class NotificationModel {
-  final String? id;
+  final String? notificationId;
   final String? senderId;
   final String? senderName;
   final String? senderImage;
   final String? receiverId;
   final String? type; // like, comment, follow
-  final String? comment; // if type == comment
+  final String? message; // if type == comment
   final DateTime? timestamp;
+  final bool? isRead;
 
   NotificationModel({
-    this.id,
+    this.notificationId,
     this.senderId,
     this.senderName,
     this.senderImage,
     this.receiverId,
     this.type,
-    this.comment,
+    this.message,
     this.timestamp,
+    this.isRead,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      id: json['id'],
+      notificationId: json['notificationId'],
       senderId: json['senderId'],
       senderName: json['senderName'],
       senderImage: json['senderImage'],
       receiverId: json['receiverId'],
       type: json['type'],
-      comment: json['comment'],
+      message: json['message'],
+      isRead: json['isRead'],
       timestamp: (json['timestamp'])?.toDate(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
+    'notificationId': notificationId,
     'senderId': senderId,
     'senderName': senderName,
     'senderImage': senderImage,
     'receiverId': receiverId,
     'type': type,
-    'comment': comment,
+    'message': message,
     'timestamp': timestamp,
+    'isRead': isRead,
   };
 }

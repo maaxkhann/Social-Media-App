@@ -82,7 +82,7 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
               onTap: () {
                 profileController
                     .follow(!isFollowed!, widget.post.userId)
-                    .then((va) => followStatus());
+                    .then((val) => followStatus());
               },
               child: Row(
                 spacing: 4,

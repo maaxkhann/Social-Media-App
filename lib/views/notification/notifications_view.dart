@@ -54,37 +54,57 @@ class NotificationsView extends StatelessWidget {
 
                   return ListView.separated(
                     itemCount: snapshot.data?.length ?? 0,
-                    separatorBuilder: (context, index) => 24.spaceY,
+                    separatorBuilder: (context, index) => 4.spaceY,
                     itemBuilder: (context, index) {
                       final notification = notifications?[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          radius: 25,
-                          foregroundImage: NetworkImage(
-                            notification?.senderImage ?? '',
-                          ),
-                        ),
-                        title: Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: notification?.senderName ?? '',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                      return GestureDetector(
+                        onTap:
+                            () =>
+                                notificationsController.markNotificationAsRead(
+                                  notification.notificationId!,
                                 ),
-                              ),
-                              TextSpan(
-                                text: buildNotificationMessage(notification!),
-                                style: TextStyle(fontSize: 11),
-                              ),
-                            ],
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                              notification!.isRead! ? 0 : 8,
+                            ),
+                            color:
+                                notification.isRead!
+                                    ? AppColors.white
+                                    : AppColors.lightGrey,
                           ),
-                        ),
-                        trailing: FittedBox(
-                          child: CustomText(
-                            title: timeago.format(notification.timestamp!),
-                            size: 10,
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              radius: 25,
+                              foregroundImage: NetworkImage(
+                                notification?.senderImage ?? '',
+                              ),
+                            ),
+                            title: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: notification?.senderName ?? '',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: buildNotificationMessage(
+                                      notification!,
+                                    ),
+                                    style: TextStyle(fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            trailing: FittedBox(
+                              child: CustomText(
+                                title: timeago.format(notification.timestamp!),
+                                size: 10,
+                              ),
+                            ),
                           ),
                         ),
                       );
@@ -102,11 +122,11 @@ class NotificationsView extends StatelessWidget {
   String buildNotificationMessage(NotificationModel notification) {
     switch (notification.type) {
       case 'like':
-        return ' liked your post';
+        return notification.message!;
       case 'comment':
-        return ' commented on your post';
+        return notification.message!;
       case 'follow':
-        return ' started following you';
+        return notification.message!;
       default:
         return ' sent you a notification';
     }

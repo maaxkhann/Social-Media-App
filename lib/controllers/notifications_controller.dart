@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:social_media/models/notifications_model.dart';
+import 'package:social_media/shared/console.dart';
 
 class NotificationsController {
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -47,13 +48,32 @@ class NotificationsController {
     return firestore
         .collection('Notifications')
         .where('receiverId', isEqualTo: auth.currentUser?.uid)
-        // .orderBy('timestamp', descending: true)
+        //  .orderBy('timestamp', descending: true)
         .snapshots()
-        .map(
-          (snapshot) =>
+        .map((snapshot) {
+          final notifications =
               snapshot.docs
                   .map((doc) => NotificationModel.fromJson(doc.data()))
-                  .toList(),
-        );
+                  .toList();
+          notifications.sort((a, b) {
+            // Put items with null timestamps at the end
+            if (a.timestamp == null && b.timestamp == null) return 0;
+            if (a.timestamp == null) return 1;
+            if (b.timestamp == null) return -1;
+            return b.timestamp!.compareTo(a.timestamp!);
+          });
+
+          return notifications;
+        });
+  }
+
+  Future<void> markNotificationAsRead(String notificationId) async {
+    try {
+      await firestore.collection('Notifications').doc(notificationId).update({
+        'isRead': true,
+      });
+    } catch (e) {
+      console('Error marking notification as read: $e');
+    }
   }
 }

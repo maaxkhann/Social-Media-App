@@ -97,7 +97,7 @@ class PostController extends GetxController {
       senderId: auth.currentUser!.uid,
       receiverId: userId, // person who owns the post
       postId: postId,
-      message: 'Liked your post!',
+      message: 'liked your post!',
     );
   }
 
@@ -132,7 +132,7 @@ class PostController extends GetxController {
       senderId: auth.currentUser!.uid,
       receiverId: receiverId,
       postId: postId,
-      message: 'Commented on your post: "$comment"',
+      message: 'commented on your post: "$comment"',
     );
   }
 
@@ -166,7 +166,6 @@ class PostController extends GetxController {
               final userModel = UserModel.fromJson(
                 userSnapshot.data() as Map<String, dynamic>,
               );
-
               return CommentsModel.fromJson(doc.data(), user: userModel);
             }),
           );
