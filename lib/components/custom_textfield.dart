@@ -11,6 +11,8 @@ class CustomTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final bool isBorder;
   final int maxLines;
+  final Color? fillColor;
+  final Color? hintColor;
 
   const CustomTextField({
     super.key,
@@ -21,6 +23,8 @@ class CustomTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.isBorder = true,
     this.maxLines = 1,
+    this.fillColor = AppColors.white,
+    this.hintColor = AppColors.black,
   });
 
   @override
@@ -45,14 +49,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
         obscureText: _obscure,
         textAlignVertical: TextAlignVertical.center,
         keyboardType: widget.keyboardType,
+        cursorColor: widget.hintColor,
+        style: TextStyle(color: widget.hintColor, fontSize: 14),
         maxLines: widget.maxLines,
         decoration: InputDecoration(
+          fillColor: widget.fillColor,
+          filled: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 15),
           hintText: widget.hintText,
-          hintStyle: TextStyle(
-            fontSize: 12,
-            color: context.theme.colorTheme.black.withValues(alpha: 0.5),
-          ),
+          hintStyle: TextStyle(fontSize: 12, color: widget.hintColor),
 
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),

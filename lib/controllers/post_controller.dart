@@ -25,10 +25,13 @@ class PostController extends GetxController {
 
   // final Uuid uuid = Uuid();
 
-  Future<void> createPost(String image, String text) async {
+  Future<void> createPost(String filePath, String text, String postType) async {
     try {
-      final file = File(image);
-      final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final file = File(filePath);
+      // Determine extension based on type
+      final String extension = postType == 'video' ? 'mp4' : 'jpg';
+      final String fileName =
+          '${DateTime.now().millisecondsSinceEpoch}.$extension';
       final Reference ref = storage.ref().child("Posts/$fileName");
       final UploadTask uploadTask = ref.putFile(file);
       final TaskSnapshot snapshot = await uploadTask;
@@ -36,12 +39,12 @@ class PostController extends GetxController {
 
       DocumentReference docRef = firestore.collection('Posts').doc();
       final postId = docRef.id;
-      docRef.set({
+      await docRef.set({
         await docRef.set({
           'postId': postId,
-          'postType': 'image',
+          'postType': postType,
           'isLiked': false,
-          'image': downloadUrl,
+          'mediaUrl': downloadUrl,
           'text': text,
           'userId': auth.currentUser?.uid,
           'timestamp': FieldValue.serverTimestamp(),
@@ -92,13 +95,15 @@ class PostController extends GetxController {
     });
     firestore.collection('Posts').doc(postId).update({'isLiked': isLiked});
     getLikes(postId);
-    await notificationsController.createNotification(
-      type: 'like',
-      senderId: auth.currentUser!.uid,
-      receiverId: userId, // person who owns the post
-      postId: postId,
-      message: 'liked your post!',
-    );
+    if (isLiked) {
+      await notificationsController.createNotification(
+        type: 'like',
+        senderId: auth.currentUser!.uid,
+        receiverId: userId, // person who owns the post
+        postId: postId,
+        message: 'liked your post!',
+      );
+    }
   }
 
   void getLikes(postId) async {
@@ -129,6 +134,7 @@ class PostController extends GetxController {
 
     await notificationsController.createNotification(
       type: 'comment',
+      commentId: commentId,
       senderId: auth.currentUser!.uid,
       receiverId: receiverId,
       postId: postId,

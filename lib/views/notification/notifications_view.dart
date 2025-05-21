@@ -6,6 +6,8 @@ import 'package:social_media/controllers/notifications_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/notifications_model.dart';
+import 'package:social_media/models/post_model.dart';
+import 'package:social_media/routes/app_routes.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class NotificationsView extends StatelessWidget {
@@ -58,11 +60,17 @@ class NotificationsView extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final notification = notifications?[index];
                       return GestureDetector(
-                        onTap:
-                            () =>
-                                notificationsController.markNotificationAsRead(
-                                  notification.notificationId!,
-                                ),
+                        onTap: () async {
+                          PostModel? postModel = await notificationsController
+                              .markNotificationAsRead(
+                                notification.notificationId!,
+                                notification.postId!,
+                              );
+                          if (postModel != null) {
+                            navigationControl(notification, postModel);
+                          }
+                        },
+
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
@@ -77,14 +85,14 @@ class NotificationsView extends StatelessWidget {
                             leading: CircleAvatar(
                               radius: 25,
                               foregroundImage: NetworkImage(
-                                notification?.senderImage ?? '',
+                                notification.senderImage ?? '',
                               ),
                             ),
                             title: Text.rich(
                               TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: notification?.senderName ?? '',
+                                    text: notification.senderName ?? '',
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
@@ -92,7 +100,7 @@ class NotificationsView extends StatelessWidget {
                                   ),
                                   TextSpan(
                                     text: buildNotificationMessage(
-                                      notification!,
+                                      notification,
                                     ),
                                     style: TextStyle(fontSize: 11),
                                   ),
@@ -129,6 +137,33 @@ class NotificationsView extends StatelessWidget {
         return notification.message!;
       default:
         return ' sent you a notification';
+    }
+  }
+
+  navigationControl(NotificationModel notification, PostModel post) {
+    switch (notification.type) {
+      case 'like':
+      case 'comment':
+        if (notification.postId != null) {
+          Get.toNamed(
+            AppRoutes.fullPostScreen,
+            arguments: {
+              'post': post,
+              'focusComment': notification.type == 'comment',
+              'commentId': notification.commentId,
+            },
+          );
+        }
+        break;
+      // case 'follow':
+      //   if (notification.senderId != null) {
+      //     Get.toNamed('/user-profile', arguments: {
+      //       'userId': notification.senderId,
+      //     });
+      //   }
+      //z  break;
+      default:
+        break;
     }
   }
 }

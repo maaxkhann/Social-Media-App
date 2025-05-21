@@ -6,8 +6,10 @@ import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/post_model.dart';
+import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/views/home/widgets/comment_dialog.dart';
 import 'package:social_media/views/home/widgets/icons_widget.dart';
+import 'package:social_media/views/post/widgets/post_preview.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class HomePostsWidget extends StatefulWidget {
@@ -57,6 +59,7 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CustomText(
                           title: widget.post.user?.name ?? '',
@@ -78,42 +81,35 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
                 ),
               ],
             ),
-            InkWell(
-              onTap: () {
-                profileController
-                    .follow(!isFollowed!, widget.post.userId)
-                    .then((val) => followStatus());
-              },
-              child: Row(
-                spacing: 4,
-                children: [
-                  Icon(Icons.add, color: AppColors.blue, size: 10),
-                  CustomText(
-                    title: isFollowed! ? 'Unfollow' : 'Follow',
-                    fontWeight: FontWeight.w800,
-                    size: 12,
-                    color: AppColors.blue,
+            widget.post.user?.userId == postController.auth.currentUser?.uid
+                ? SizedBox()
+                : InkWell(
+                  onTap: () {
+                    profileController
+                        .follow(!isFollowed!, widget.post.userId)
+                        .then((val) => followStatus());
+                  },
+                  child: Row(
+                    spacing: 4,
+                    children: [
+                      Icon(Icons.add, color: AppColors.blue, size: 10),
+                      CustomText(
+                        title: isFollowed! ? 'Unfollow' : 'Follow',
+                        fontWeight: FontWeight.w800,
+                        size: 12,
+                        color: AppColors.blue,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
           ],
         ),
         17.spaceY,
         CustomText(title: widget.post.text, size: 10),
         16.spaceY,
         //  if (post.image.isNotEmpty)
-        Container(
-          width: double.infinity,
-          height: 152,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            image: DecorationImage(
-              image: NetworkImage(widget.post.image),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
+        PostPreview(post: widget.post),
+
         7.spaceY,
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),

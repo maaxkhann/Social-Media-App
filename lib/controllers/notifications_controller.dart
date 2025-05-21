@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:social_media/models/notifications_model.dart';
+import 'package:social_media/models/post_model.dart';
 import 'package:social_media/shared/console.dart';
 
 class NotificationsController {
@@ -37,7 +38,7 @@ class NotificationsController {
       'senderId': senderId, //currentId
       'receiverId': receiverId,
       'postId': postId,
-      //  'commentId': commentId,
+      'commentId': commentId,
       'message': message,
       'timestamp': FieldValue.serverTimestamp(),
       'isRead': false,
@@ -54,6 +55,7 @@ class NotificationsController {
           final notifications =
               snapshot.docs
                   .map((doc) => NotificationModel.fromJson(doc.data()))
+                  .where((notif) => notif.senderId != auth.currentUser?.uid)
                   .toList();
           notifications.sort((a, b) {
             // Put items with null timestamps at the end
@@ -67,13 +69,22 @@ class NotificationsController {
         });
   }
 
-  Future<void> markNotificationAsRead(String notificationId) async {
+  Future<dynamic> markNotificationAsRead(
+    String notificationId,
+    String postId,
+  ) async {
     try {
       await firestore.collection('Notifications').doc(notificationId).update({
         'isRead': true,
       });
+      final doc = await firestore.collection('Posts').doc(postId).get();
+      PostModel postModel = PostModel.fromJson(
+        doc.data() as Map<String, dynamic>,
+      );
+      return postModel;
     } catch (e) {
       console('Error marking notification as read: $e');
+      return;
     }
   }
 }

@@ -11,6 +11,8 @@ import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/shared/console.dart';
 import 'package:social_media/shared/utilities/pickers.dart';
+import 'package:social_media/utilities/thumbnail.dart';
+import 'package:social_media/views/post/widgets/media_picker_sheet.dart';
 
 class PostView extends StatefulWidget {
   const PostView({super.key});
@@ -23,7 +25,10 @@ class _PostViewState extends State<PostView> {
   final postController = Get.find<PostController>();
   final profileController = Get.find<ProfileController>();
   final postCont = TextEditingController();
-  String? image;
+  String? filePath;
+  String? postType;
+  String? thumbnailPath;
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -66,29 +71,51 @@ class _PostViewState extends State<PostView> {
               children: [
                 IconButton(
                   onPressed: () async {
-                    String? pickedImage = await Pickers.ins.pickImage();
-                    console(pickedImage);
-                    if (pickedImage != null) {
-                      image = pickedImage;
-                      setState(() {});
-                    }
+                    MediaPickerSheet.show(
+                      context: context,
+                      onPicked: (path, type) async {
+                        String? thumb;
+                        if (type == 'video') {
+                          thumb = await Thumbnail.ins.generateThumbnail(path);
+                        }
+                        setState(() {
+                          filePath = path;
+                          postType = type;
+                          thumbnailPath = thumb;
+                        });
+                      },
+                    );
                   },
+
                   icon: Icon(
                     Icons.image,
                     color: AppColors.black.withValues(alpha: 0.5),
                   ),
                 ),
-                if (image != null)
-                  Image.file(
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.scaleDown,
-                    File(image!),
-                  ),
+                if (filePath != null)
+                  postType == 'image'
+                      ? Image.file(
+                        File(filePath!),
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.scaleDown,
+                      )
+                      : thumbnailPath != null
+                      ? Image.file(
+                        File(thumbnailPath!),
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      )
+                      : Icon(Icons.video_file, size: 40),
+
                 IconButton(
                   onPressed:
-                      () =>
-                          postController.createPost(image ?? '', postCont.text),
+                      () => postController.createPost(
+                        filePath ?? '',
+                        postCont.text,
+                        postType ?? '',
+                      ),
                   icon: Icon(
                     Icons.send,
                     color: AppColors.black.withValues(alpha: 0.5),

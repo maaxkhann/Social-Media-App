@@ -4,4 +4,5 @@ abstract class AppRoutes {
   static const otpView = "/otpView";
   static const customBottomNavBar = "/customBottomNavBar";
   static const notificationsView = "/notificationsView";
+  static const fullPostScreen = "/fullPostScreen";
 }

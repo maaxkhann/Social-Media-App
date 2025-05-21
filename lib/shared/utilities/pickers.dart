@@ -43,6 +43,16 @@ class Pickers {
     }
   }
 
+  Future<String?> pickVideo({ImageSource source = ImageSource.gallery}) async {
+    try {
+      XFile? file = await _picker.pickVideo(source: source);
+      return file?.path;
+    } catch (e) {
+      console(e.toString());
+      return null;
+    }
+  }
+
   Future<List<String>> pickImages({int quality = 50}) async {
     try {
       List<XFile> files = await _picker.pickMultiImage(imageQuality: quality);

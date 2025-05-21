@@ -6,9 +6,8 @@ import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/views/auth/login_view.dart';
 import 'package:social_media/views/auth/otp_screen.dart';
 import 'package:social_media/views/auth/register_view.dart';
-import 'package:social_media/views/home/home_view.dart';
+import 'package:social_media/views/post/full_post_screen.dart';
 import 'package:social_media/views/notification/notifications_view.dart';
-import 'package:social_media/views/post/post_view.dart';
 
 class AppPages {
   static final routes = [
@@ -49,6 +48,11 @@ class AppPages {
       name: AppRoutes.notificationsView,
       transition: Transition.rightToLeft,
       page: () => NotificationsView(),
+    ),
+    GetPage(
+      name: AppRoutes.fullPostScreen,
+      transition: Transition.fadeIn,
+      page: () => FullPostScreen(),
     ),
   ];
 }

@@ -18,11 +18,11 @@ class IconsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: onTap,
-          child: Icon(
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Icon(
             icon,
             size: 13,
             color:
@@ -30,10 +30,10 @@ class IconsWidget extends StatelessWidget {
                     ? AppColors.blue
                     : AppColors.black.withValues(alpha: 0.65),
           ),
-        ),
-        5.spaceY,
-        CustomText(title: title, size: 10),
-      ],
+          5.spaceY,
+          CustomText(title: title, size: 10),
+        ],
+      ),
     );
   }
 }

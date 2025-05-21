@@ -3,7 +3,7 @@ import 'user_model.dart';
 
 class PostModel {
   final String postId;
-  final String image;
+  final String mediaUrl;
   final String text;
   final String userId;
   final String postType;
@@ -13,7 +13,7 @@ class PostModel {
 
   PostModel({
     required this.postId,
-    required this.image,
+    required this.mediaUrl,
     required this.text,
     required this.userId,
     required this.postType,
@@ -27,7 +27,7 @@ class PostModel {
 
     return PostModel(
       postId: data['postId'],
-      image: data['image'],
+      mediaUrl: data['mediaUrl'],
       text: data['text'],
       userId: data['userId'],
       postType: data['postType'],
