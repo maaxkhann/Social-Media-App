@@ -9,6 +9,7 @@ import 'package:social_media/models/post_model.dart';
 import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/views/home/widgets/comment_dialog.dart';
 import 'package:social_media/views/home/widgets/icons_widget.dart';
+import 'package:social_media/views/post/widgets/post_actions.dart';
 import 'package:social_media/views/post/widgets/post_preview.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -150,75 +151,8 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
         ),
         Divider(color: AppColors.black.withValues(alpha: 0.18)),
         8.spaceY,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconsWidget(
-              onTap:
-                  () => postController.likePost(
-                    widget.post.userId,
-                    widget.post.postId,
-                    !widget.post.isLiked,
-                  ),
-              title: 'Like',
-              isLiked: widget.post.isLiked,
-              icon:
-                  widget.post.isLiked
-                      ? Icons.thumb_up
-                      : Icons.thumb_up_alt_outlined,
-            ),
-            IconsWidget(
-              onTap: () => showCommentSheet(context, widget.post.postId),
-              title: 'Comment',
-              icon: Icons.comment,
-            ),
-            IconsWidget(title: 'Share', icon: Icons.upload),
-            IconsWidget(title: 'Message', icon: Icons.message),
-          ],
-        ),
+        PostActions(post: widget.post),
       ],
     );
   }
-
-  //   void _showCommentDialog(BuildContext context) {
-  //     final TextEditingController commentController = TextEditingController();
-
-  //     showDialog(
-  //       context: context,
-  //       builder: (context) {
-  //         return AlertDialog(
-  //           shape: RoundedRectangleBorder(
-  //             borderRadius: BorderRadius.circular(12),
-  //           ),
-  //           title: const Text('Add Comment'),
-  //           content: TextField(
-  //             controller: commentController,
-  //             maxLines: 3,
-  //             decoration: const InputDecoration(
-  //               hintText: 'Type your comment here...',
-  //               border: OutlineInputBorder(),
-  //             ),
-  //           ),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () => Navigator.of(context).pop(),
-  //               child: const Text('Cancel'),
-  //             ),
-  //             ElevatedButton(
-  //               onPressed: () {
-  //                 final comment = commentController.text.trim();
-  //                 if (comment.isNotEmpty) {
-  //                   // TODO: Save comment logic
-  //                   console('Commented: $comment');
-  //                   Navigator.of(context).pop();
-  //                 }
-  //               },
-  //               child: const Text('Submit'),
-  //             ),
-  //           ],
-  //         );
-  //       },
-  //     );
-  //   }
-  // }
 }

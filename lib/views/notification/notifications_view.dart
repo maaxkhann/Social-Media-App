@@ -142,19 +142,20 @@ class NotificationsView extends StatelessWidget {
 
   navigationControl(NotificationModel notification, PostModel post) {
     switch (notification.type) {
-      case 'like':
       case 'comment':
         if (notification.postId != null) {
           Get.toNamed(
             AppRoutes.fullPostScreen,
-            arguments: {
-              'post': post,
-              'focusComment': notification.type == 'comment',
-              'commentId': notification.commentId,
-            },
+            arguments: {'post': post, 'commentId': notification.commentId},
           );
         }
         break;
+      case 'like':
+        if (notification.postId != null) {
+          Get.toNamed(AppRoutes.fullPostScreen, arguments: {'post': post});
+        }
+        break;
+
       // case 'follow':
       //   if (notification.senderId != null) {
       //     Get.toNamed('/user-profile', arguments: {

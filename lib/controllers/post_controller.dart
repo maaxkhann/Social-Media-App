@@ -83,6 +83,14 @@ class PostController extends GetxController {
         });
   }
 
+  Stream<PostModel> getPost(String postId) {
+    return firestore
+        .collection('Posts')
+        .doc(postId)
+        .snapshots()
+        .map((doc) => PostModel.fromJson(doc.data()!));
+  }
+
   Future<void> likePost(String userId, String postId, bool isLiked) async {
     final likePostId = '${postId}_$userId';
     DocumentReference docRef = firestore.collection('Likes').doc(likePostId);

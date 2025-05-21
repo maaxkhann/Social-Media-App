@@ -49,12 +49,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
         obscureText: _obscure,
         textAlignVertical: TextAlignVertical.center,
         keyboardType: widget.keyboardType,
-        cursorColor: widget.hintColor,
+        // cursorColor: widget.hintColor,
         style: TextStyle(color: widget.hintColor, fontSize: 14),
         maxLines: widget.maxLines,
         decoration: InputDecoration(
           fillColor: widget.fillColor,
           filled: true,
+
           contentPadding: const EdgeInsets.symmetric(horizontal: 15),
           hintText: widget.hintText,
           hintStyle: TextStyle(fontSize: 12, color: widget.hintColor),

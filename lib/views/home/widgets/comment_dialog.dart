@@ -6,7 +6,6 @@ import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/comments_model.dart';
-import 'package:social_media/shared/console.dart';
 
 showCommentSheet(
   BuildContext context,
