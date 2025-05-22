@@ -26,12 +26,6 @@ class AuthController extends GetxController {
     String phoneNumber,
     String position,
   ) async {
-    final file = File(image);
-    final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final Reference ref = storage.ref().child("Profile_images/$fileName");
-    final UploadTask uploadTask = ref.putFile(file);
-    final TaskSnapshot snapshot = await uploadTask;
-    final String downloadUrl = await snapshot.ref.getDownloadURL();
     try {
       bool isValidate = validateRegister(
         image,
@@ -44,6 +38,13 @@ class AuthController extends GetxController {
       );
       if (isValidate) {
         Pops.startLoading();
+        final file = File(image);
+        final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final Reference ref = storage.ref().child("Profile_images/$fileName");
+        final UploadTask uploadTask = ref.putFile(file);
+        final TaskSnapshot snapshot = await uploadTask;
+        final String downloadUrl = await snapshot.ref.getDownloadURL();
+
         UserCredential userCredential = await auth
             .createUserWithEmailAndPassword(email: email, password: password);
         if (userCredential.user != null) {
