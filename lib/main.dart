@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:social_media/firebase_options.dart';
 import 'package:social_media/routes/app_pages.dart';
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Social Media',
       theme: lightTheme,
+      builder: EasyLoading.init(),
       initialRoute: AppRoutes.loginView,
       getPages: AppPages.routes,
       // darkTheme: darkTheme,

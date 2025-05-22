@@ -100,11 +100,12 @@ class _RegisterViewState extends State<RegisterView> {
                 onTap:
                     () => authController.createUser(
                       image ?? '',
-                      nameCont.text,
-                      passwordCont.text,
-                      emailCont.text,
-                      phoneCont.text,
-                      positionCont.text,
+                      nameCont.text.trim(),
+                      passwordCont.text.trim(),
+                      confirmPasswordCont.text.trim(),
+                      emailCont.text.trim(),
+                      phoneCont.text.trim(),
+                      positionCont.text.trim(),
                     ),
                 child: Container(
                   width: double.infinity,
