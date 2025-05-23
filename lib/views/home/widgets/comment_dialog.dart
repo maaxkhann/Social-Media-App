@@ -4,6 +4,7 @@ import 'package:social_media/components/custom_textfield.dart';
 import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/post_controller.dart';
+import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/comments_model.dart';
 
@@ -14,6 +15,7 @@ showCommentSheet(
 }) {
   final commentController = TextEditingController();
   final postController = Get.find<PostController>();
+  final profileController = Get.find<ProfileController>();
   final commentStream = postController.getComments(postId);
   showModalBottomSheet(
     isScrollControlled: true,
@@ -147,16 +149,36 @@ showCommentSheet(
                                                                           .w600,
                                                                 ),
                                                                 5.spaceX,
-                                                                CustomText(
-                                                                  title:
-                                                                      'Follow',
-                                                                  size: 8,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  color:
-                                                                      AppColors
-                                                                          .blue,
+                                                                FutureBuilder(
+                                                                  future: profileController
+                                                                      .getFollowStatus(
+                                                                        comment?.user?.userId ??
+                                                                            '',
+                                                                      ),
+                                                                  builder: (
+                                                                    context,
+                                                                    followSnapshot,
+                                                                  ) {
+                                                                    final isFollow =
+                                                                        followSnapshot
+                                                                            .data ??
+                                                                        false;
+                                                                    return profileController.auth.currentUser?.uid ==
+                                                                            comment?.user?.userId
+                                                                        ? SizedBox.shrink()
+                                                                        : CustomText(
+                                                                          title:
+                                                                              isFollow
+                                                                                  ? 'Followed'
+                                                                                  : '',
+                                                                          size:
+                                                                              8,
+                                                                          fontWeight:
+                                                                              FontWeight.w600,
+                                                                          color:
+                                                                              AppColors.blue,
+                                                                        );
+                                                                  },
                                                                 ),
                                                               ],
                                                             ),

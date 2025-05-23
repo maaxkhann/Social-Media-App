@@ -53,9 +53,9 @@ class ProfileController extends GetxController {
     final docRef = FirebaseFirestore.instance.collection('Follows').doc(docId);
     final doc = await docRef.get();
 
-    if (doc.exists && doc['isFollowed'] == true) {
-      // UNFOLLOW
-
+    if (doc.exists &&
+        doc['isFollowed'] == true &&
+        doc['followingId'] != auth.currentUser?.uid) {
       return true;
     }
     return false;

@@ -26,7 +26,7 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
   final postController = Get.find<PostController>();
   final profileController = Get.find<ProfileController>();
   final commentController = TextEditingController();
-  bool? isFollowed = false;
+  bool isFollowed = false;
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) => followStatus());
@@ -87,7 +87,7 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
                 : InkWell(
                   onTap: () {
                     profileController
-                        .follow(!isFollowed!, widget.post.userId)
+                        .follow(!isFollowed, widget.post.userId)
                         .then((val) => followStatus());
                   },
                   child: Row(
@@ -95,7 +95,7 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
                     children: [
                       Icon(Icons.add, color: AppColors.blue, size: 10),
                       CustomText(
-                        title: isFollowed! ? 'Unfollow' : 'Follow',
+                        title: isFollowed ? 'Unfollow' : 'Follow',
                         fontWeight: FontWeight.w800,
                         size: 12,
                         color: AppColors.blue,

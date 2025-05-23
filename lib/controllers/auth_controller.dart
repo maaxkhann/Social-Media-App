@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_media/general/validation.dart';
 import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/shared/console.dart';
@@ -62,6 +62,7 @@ class AuthController extends GetxController {
             'isFollowed': false,
             'userId': uId,
           });
+          Pops.stopLoading();
 
           Get.offNamed(AppRoutes.loginView);
         }
@@ -69,19 +70,19 @@ class AuthController extends GetxController {
     } on FirebaseAuthException catch (e) {
       Pops.stopLoading();
       if (e.code == 'email-already-in-use') {
-        Pops.showToast('Email already in use');
+        Pops.showError('Email already in use');
         return;
       } else if (e.code == 'weak-password') {
-        Pops.showToast('Weak password');
+        Pops.showError('Weak password');
         return;
       } else if (e.code == 'wrong-password') {
-        Pops.showToast('Wrong password');
+        Pops.showError('Wrong password');
         return;
       } else if (e.code == 'invalid-email') {
-        Pops.showToast('Invalid email');
+        Pops.showError('Invalid email');
         return;
       } else if (e.code == 'user-not-found') {
-        Pops.showToast('User not found');
+        Pops.showError('User not found');
         return;
       }
     } catch (e) {
@@ -100,19 +101,27 @@ class AuthController extends GetxController {
           email: email,
           password: password,
         );
-
+        final sp = await SharedPreferences.getInstance();
         if (userCredential.user != null) {
+          await sp.setBool('isLogin', true);
+          Pops.stopLoading();
           Get.offNamed(AppRoutes.customBottomNavBar);
         }
       }
     } on FirebaseAuthException catch (e) {
+      console(e.code);
       Pops.stopLoading();
       if (e.code == 'wrong-password') {
-        Pops.showToast('Wrong password');
+        Pops.showError('Wrong password');
+        return;
+      } else if (e.code == 'invalid-credential') {
+        Pops.showError('Invalid credentials');
+        return;
       } else if (e.code == 'invalid-email') {
-        Pops.showToast('Invalid email');
+        Pops.showError('Invalid email');
+        return;
       } else if (e.code == 'user-not-found') {
-        Pops.showToast('User not found');
+        Pops.showError('User not found');
         return;
       }
     } catch (e) {

@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       title: 'Social Media',
       theme: lightTheme,
       builder: EasyLoading.init(),
-      initialRoute: AppRoutes.loginView,
+      initialRoute: AppRoutes.splashView,
       getPages: AppPages.routes,
       // darkTheme: darkTheme,
       home: const LoginView(),

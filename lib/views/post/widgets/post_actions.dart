@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_media/controllers/post_controller.dart';
+import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/models/post_model.dart';
 import 'package:social_media/views/home/widgets/comment_dialog.dart';
 import 'package:social_media/views/home/widgets/icons_widget.dart';
@@ -16,11 +17,13 @@ class PostActions extends StatefulWidget {
 
 class _PostActionsState extends State<PostActions> {
   final postController = Get.find<PostController>();
+  final profileController = Get.find<ProfileController>();
   PostModel? livePost;
 
   @override
   void initState() {
     super.initState();
+
     livePost = widget.post;
     postController
         .getPost(widget.post?.postId ?? '')

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_media/components/custom_appbar.dart';
 import 'package:social_media/controllers/post_controller.dart';
+import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/models/post_model.dart';
 import 'package:social_media/shared/console.dart';
 import 'package:social_media/views/home/widgets/comment_dialog.dart';
@@ -18,6 +19,7 @@ class FullPostScreen extends StatefulWidget {
 
 class _FullPostScreenState extends State<FullPostScreen> {
   final postController = Get.find<PostController>();
+  final profileController = Get.find<ProfileController>();
   PostModel? post;
   VideoPlayerController? videoController;
 
@@ -30,6 +32,7 @@ class _FullPostScreenState extends State<FullPostScreen> {
         showCommentSheet(
           context,
           post?.postId ?? '',
+
           targetCommentId: Get.arguments['commentId'],
         );
       }
@@ -66,7 +69,7 @@ class _FullPostScreenState extends State<FullPostScreen> {
                   ),
                   child: CustomAppBar(),
                 ),
-                SizedBox(height: Get.height * 0.2),
+                SizedBox(height: Get.height * 0.12),
                 post?.postType == 'image'
                     ? AspectRatio(
                       aspectRatio: 1 / 1,

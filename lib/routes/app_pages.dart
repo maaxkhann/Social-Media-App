@@ -6,20 +6,21 @@ import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/views/auth/login_view.dart';
 import 'package:social_media/views/auth/otp_screen.dart';
 import 'package:social_media/views/auth/register_view.dart';
+import 'package:social_media/views/auth/splash_view.dart';
 import 'package:social_media/views/post/full_post_screen.dart';
 import 'package:social_media/views/notification/notifications_view.dart';
 
 class AppPages {
   static final routes = [
-    // GetPage(
-    //   name: AppRoutes.splashView,
-    //   transition: Transition.rightToLeft,
-    //   page: () => SplashView(),
-    //   binding: BindingsBuilder(() {
-    //     Get.lazyPut<SplashViewModel>(() => SplashViewModel());
-    //     // Get.lazyPut<SubsViewModel>(() => SubsViewModel());
-    //   }),
-    // ),
+    GetPage(
+      name: AppRoutes.splashView,
+      transition: Transition.rightToLeft,
+      page: () => SplashView(),
+      // binding: BindingsBuilder(() {
+      //   Get.lazyPut<SplashViewModel>(() => SplashViewModel());
+      //   // Get.lazyPut<SubsViewModel>(() => SubsViewModel());
+      // }),
+    ),
     GetPage(
       name: AppRoutes.loginView,
       transition: Transition.rightToLeft,

@@ -1,4 +1,5 @@
 abstract class AppRoutes {
+  static const splashView = "/splashView";
   static const loginView = "/loginView";
   static const registerView = "/registerView";
   static const otpView = "/otpView";

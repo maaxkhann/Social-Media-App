@@ -31,101 +31,115 @@ class _PostViewState extends State<PostView> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              40.spaceY,
-              Obx(() {
-                return CircleAvatar(
-                  radius: 25,
-                  foregroundImage: NetworkImage(
-                    profileController.userModel.value?.image ??
-                        'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                  ),
-                );
-              }),
-              18.spaceY,
-              CustomText(title: 'Success Stories', size: 11),
-              11.spaceY,
-              StoriesWidget(),
-              5.spaceY,
-
-              CustomTextField(
-                controller: postCont,
-                isBorder: false,
-                hintText: 'Share your story or idea...',
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
               ),
-            ],
-          ),
-        ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () async {
-                    MediaPickerSheet.show(
-                      context: context,
-                      onPicked: (path, type) async {
-                        String? thumb;
-                        if (type == 'video') {
-                          thumb = await Thumbnail.ins.generateThumbnail(path);
-                        }
-                        setState(() {
-                          filePath = path;
-                          postType = type;
-                          thumbnailPath = thumb;
-                        });
-                      },
-                    );
-                  },
-
-                  icon: Icon(
-                    Icons.image,
-                    color: AppColors.black.withValues(alpha: 0.5),
-                  ),
-                ),
-                if (filePath != null)
-                  postType == 'image'
-                      ? Image.file(
-                        File(filePath!),
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.scaleDown,
-                      )
-                      : thumbnailPath != null
-                      ? Image.file(
-                        File(thumbnailPath!),
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      )
-                      : Icon(Icons.video_file, size: 40),
-
-                IconButton(
-                  onPressed:
-                      () => postController.createPost(
-                        filePath ?? '',
-                        postCont.text,
-                        postType ?? '',
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      40.spaceY,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Obx(() {
+                              return CircleAvatar(
+                                radius: 25,
+                                foregroundImage: NetworkImage(
+                                  profileController.userModel.value?.image ??
+                                      'https://images.unsplash.com/photo-1511367461989-f85a21fda167',
+                                ),
+                              );
+                            }),
+                            18.spaceY,
+                            CustomTextField(
+                              controller: postCont,
+                              isBorder: false,
+                              hintText: 'Share your story or idea...',
+                              maxLines: 4,
+                            ),
+                          ],
+                        ),
                       ),
-                  icon: Icon(
-                    Icons.send,
-                    color: AppColors.black.withValues(alpha: 0.5),
+                      24.spaceY,
+                      if (filePath != null)
+                        postType == 'image'
+                            ? Image.file(
+                              File(filePath!),
+                              width: double.infinity,
+                              height: Get.height * 0.42,
+                              fit: BoxFit.fill,
+                            )
+                            : thumbnailPath != null
+                            ? Image.file(
+                              File(thumbnailPath!),
+                              width: double.infinity,
+                              height: Get.height * 0.42,
+                              fit: BoxFit.fill,
+                            )
+                            : Center(child: Icon(Icons.video_file, size: 40)),
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              onPressed: () async {
+                                MediaPickerSheet.show(
+                                  context: context,
+                                  onPicked: (path, type) async {
+                                    String? thumb;
+                                    if (type == 'video') {
+                                      thumb = await Thumbnail.ins
+                                          .generateThumbnail(path);
+                                    }
+                                    setState(() {
+                                      filePath = path;
+                                      postType = type;
+                                      thumbnailPath = thumb;
+                                    });
+                                  },
+                                );
+                              },
+                              icon: Icon(
+                                Icons.image,
+                                color: AppColors.black.withValues(alpha: 0.5),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed:
+                                  () => postController.createPost(
+                                    filePath ?? '',
+                                    postCont.text,
+                                    postType ?? '',
+                                  ),
+                              icon: Icon(
+                                Icons.send,
+                                color: AppColors.black.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
-      ],
+      ),
     );
   }
 }

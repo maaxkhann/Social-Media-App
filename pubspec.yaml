@@ -47,6 +47,7 @@ dependencies:
   video_thumbnail: ^0.5.6
   path_provider: ^2.1.5
   flutter_easyloading: ^3.0.5
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
@@ -71,8 +72,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+   - assets/icons/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

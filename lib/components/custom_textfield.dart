@@ -48,7 +48,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
         controller: widget.controller,
         obscureText: _obscure,
         textAlignVertical: TextAlignVertical.center,
-        keyboardType: widget.keyboardType,
+        keyboardType:
+            widget.maxLines != 1
+                ? TextInputType.multiline
+                : widget.keyboardType,
         // cursorColor: widget.hintColor,
         style: TextStyle(color: widget.hintColor, fontSize: 14),
         maxLines: widget.maxLines,
