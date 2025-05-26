@@ -34,8 +34,7 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
   }
 
   followStatus() async {
-    isFollowed = await profileController.getFollowStatus(widget.post.userId);
-    setState(() {});
+    profileController.loadFollowStatus(widget.post.userId);
   }
 
   @override
@@ -84,25 +83,32 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
             ),
             widget.post.user?.userId == postController.auth.currentUser?.uid
                 ? SizedBox()
-                : InkWell(
-                  onTap: () {
-                    profileController
-                        .follow(!isFollowed, widget.post.userId)
-                        .then((val) => followStatus());
-                  },
-                  child: Row(
-                    spacing: 4,
-                    children: [
-                      Icon(Icons.add, color: AppColors.blue, size: 10),
-                      CustomText(
-                        title: isFollowed ? 'Unfollow' : 'Follow',
-                        fontWeight: FontWeight.w800,
-                        size: 12,
-                        color: AppColors.blue,
-                      ),
-                    ],
-                  ),
-                ),
+                : Obx(() {
+                  final isFollowed =
+                      profileController
+                          .followStatusMap[widget.post.userId]
+                          ?.value ??
+                      false;
+                  return InkWell(
+                    onTap:
+                        () => profileController.follow(
+                          !isFollowed,
+                          widget.post.userId,
+                        ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.add, color: AppColors.blue, size: 10),
+                        4.spaceX,
+                        CustomText(
+                          title: isFollowed ? 'Unfollow' : 'Follow',
+                          fontWeight: FontWeight.w800,
+                          size: 12,
+                          color: AppColors.blue,
+                        ),
+                      ],
+                    ),
+                  );
+                }),
           ],
         ),
         17.spaceY,

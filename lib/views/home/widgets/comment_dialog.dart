@@ -85,6 +85,7 @@ showCommentSheet(
                               if (comment?.commentId != null) {
                                 commentKeys[comment!.commentId] = key;
                               }
+
                               return Container(
                                 key: key,
                                 child: Row(
@@ -149,37 +150,41 @@ showCommentSheet(
                                                                           .w600,
                                                                 ),
                                                                 5.spaceX,
-                                                                FutureBuilder(
-                                                                  future: profileController
-                                                                      .getFollowStatus(
-                                                                        comment?.user?.userId ??
-                                                                            '',
-                                                                      ),
-                                                                  builder: (
-                                                                    context,
-                                                                    followSnapshot,
-                                                                  ) {
-                                                                    final isFollow =
-                                                                        followSnapshot
-                                                                            .data ??
-                                                                        false;
-                                                                    return profileController.auth.currentUser?.uid ==
-                                                                            comment?.user?.userId
-                                                                        ? SizedBox.shrink()
-                                                                        : CustomText(
+                                                                Obx(() {
+                                                                  final isFollowed =
+                                                                      profileController
+                                                                          .followStatusMap[comment
+                                                                              ?.commentBy]
+                                                                          ?.value ??
+                                                                      false;
+                                                                  return profileController
+                                                                              .auth
+                                                                              .currentUser
+                                                                              ?.uid ==
+                                                                          comment
+                                                                              ?.user
+                                                                              ?.userId
+                                                                      ? SizedBox.shrink()
+                                                                      : InkWell(
+                                                                        onTap:
+                                                                            () => profileController.follow(
+                                                                              !isFollowed,
+                                                                              comment!.commentBy,
+                                                                            ),
+                                                                        child: CustomText(
                                                                           title:
-                                                                              isFollow
+                                                                              isFollowed
                                                                                   ? 'Followed'
-                                                                                  : '',
+                                                                                  : 'Follow',
                                                                           size:
                                                                               8,
                                                                           fontWeight:
                                                                               FontWeight.w600,
                                                                           color:
                                                                               AppColors.blue,
-                                                                        );
-                                                                  },
-                                                                ),
+                                                                        ),
+                                                                      );
+                                                                }),
                                                               ],
                                                             ),
                                                             4.spaceY,
