@@ -73,6 +73,7 @@ class NotificationsController {
     String notificationId,
     String postId,
   ) async {
+    console('notificationId: $notificationId, postId: $postId');
     try {
       await firestore.collection('Notifications').doc(notificationId).update({
         'isRead': true,
@@ -86,5 +87,35 @@ class NotificationsController {
       console('Error marking notification as read: $e');
       return;
     }
+  }
+
+  Future<void> addReply(String commentId, String reply) async {
+    final userId = auth.currentUser!.uid;
+    DocumentReference docRef =
+        firestore
+            .collection('Comments')
+            .doc(commentId)
+            .collection('Replies')
+            .doc();
+
+    await docRef.set({
+      'replyId': docRef.id,
+      'commentId': commentId,
+      'reply': reply,
+      'replyBy': userId,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    // Optional: notify comment owner
+    final commentDoc =
+        await firestore.collection('Comments').doc(commentId).get();
+    final receiverId = commentDoc['commentBy'];
+    await createNotification(
+      type: 'reply',
+      senderId: userId,
+      receiverId: receiverId,
+      commentId: commentId,
+      message: 'replied to your comment: "$reply"',
+    );
   }
 }

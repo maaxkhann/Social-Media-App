@@ -8,6 +8,7 @@ import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/notifications_model.dart';
 import 'package:social_media/models/post_model.dart';
 import 'package:social_media/routes/app_routes.dart';
+import 'package:social_media/shared/console.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class NotificationsView extends StatelessWidget {
@@ -131,6 +132,8 @@ class NotificationsView extends StatelessWidget {
     switch (notification.type) {
       case 'like':
         return notification.message!;
+      case 'like_comment':
+        return notification.message!;
       case 'comment':
         return notification.message!;
       case 'follow':
@@ -153,6 +156,14 @@ class NotificationsView extends StatelessWidget {
       case 'like':
         if (notification.postId != null) {
           Get.toNamed(AppRoutes.fullPostScreen, arguments: {'post': post});
+        }
+        break;
+      case 'like_comment':
+        if (notification.postId != null) {
+          Get.toNamed(
+            AppRoutes.fullPostScreen,
+            arguments: {'post': post, 'commentId': notification.commentId},
+          );
         }
         break;
 

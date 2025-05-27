@@ -7,6 +7,7 @@ class CommentsModel {
 
   final String comment;
   final String commentBy;
+  final bool isLiked;
 
   final Timestamp timeStamp;
   final UserModel? user;
@@ -17,6 +18,7 @@ class CommentsModel {
 
     required this.comment,
     required this.commentBy,
+    required this.isLiked,
 
     required this.timeStamp,
     this.user,
@@ -31,6 +33,7 @@ class CommentsModel {
 
       comment: data['comment'],
       commentBy: data['commentBy'],
+      isLiked: data['isLiked'],
 
       timeStamp: data['timeStamp'],
       user: user,

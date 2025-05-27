@@ -225,9 +225,21 @@ showCommentSheet(
                                             ),
                                             child: Row(
                                               children: [
-                                                CustomText(
-                                                  title: 'Like',
-                                                  size: 10,
+                                                InkWell(
+                                                  onTap: () {
+                                                    postController.likeComment(
+                                                      comment.commentId,
+                                                      comment.postId,
+                                                      !comment.isLiked,
+                                                    );
+                                                  },
+                                                  child: CustomText(
+                                                    title:
+                                                        comment!.isLiked
+                                                            ? 'Unlike'
+                                                            : 'Like',
+                                                    size: 10,
+                                                  ),
                                                 ),
                                                 11.spaceX,
                                                 CustomText(
@@ -238,15 +250,20 @@ showCommentSheet(
                                                 ),
                                                 11.spaceX,
                                                 Icon(
-                                                  Icons.thumb_up_outlined,
+                                                  comment.isLiked
+                                                      ? Icons.thumb_up
+                                                      : Icons.thumb_up_outlined,
                                                   color: AppColors.blue,
                                                   size: 9,
                                                 ),
                                                 3.spaceX,
-                                                CustomText(
-                                                  title: '3',
-                                                  size: 10,
-                                                ),
+                                                Obx(() {
+                                                  return CustomText(
+                                                    title:
+                                                        '${postController.commentsLikesCount[comment.commentId] ?? '0'}',
+                                                    size: 10,
+                                                  );
+                                                }),
                                                 12.spaceX,
                                                 CustomText(
                                                   title: 'Reply',

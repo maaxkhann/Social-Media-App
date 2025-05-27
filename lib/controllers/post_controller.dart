@@ -22,6 +22,7 @@ class PostController extends GetxController {
   RxList<PostModel> posts = <PostModel>[].obs;
   RxMap<String, int> likesCounts = <String, int>{}.obs;
   RxMap<String, int> commentsCounts = <String, int>{}.obs;
+  RxMap<String, int> commentsLikesCount = <String, int>{}.obs;
 
   // final Uuid uuid = Uuid();
 
@@ -150,6 +151,51 @@ class PostController extends GetxController {
     );
   }
 
+  Future<void> likeComment(String commentId, String postId, bool isLiked) async {
+    final likePostId = '${commentId}_${auth.currentUser?.uid}';
+    console('isLiked $isLiked');
+    DocumentReference docRef = firestore
+        .collection('Comments')
+        .doc(commentId)
+        .collection('Likes')
+        .doc(likePostId);
+
+    await docRef.set({
+      'isLiked': isLiked,
+      'likeId': likePostId,
+      'likedBy': auth.currentUser?.uid,
+    });
+    firestore.collection('Comments').doc(commentId).update({
+      'isLiked': isLiked,
+    });
+    getCommentLikes(commentId);
+    final commentSnapshot =
+        await firestore.collection('Comments').doc(commentId).get();
+    final receiverId = commentSnapshot['commentBy'];
+    // Send notification only when liked (not when unliked)
+    if (isLiked) {
+      await notificationsController.createNotification(
+        type: 'like_comment',
+        senderId: auth.currentUser!.uid,
+        receiverId: receiverId,
+        postId: postId,
+        commentId: commentId,
+        message: 'liked your comment: "${commentSnapshot['comment']}"',
+      );
+    }
+  }
+
+  void getCommentLikes(commentId) async {
+    final likesSnapshot =
+        await firestore
+            .collection('Comments')
+            .doc(commentId)
+            .collection('Likes')
+            .where('isLiked', isEqualTo: true)
+            .get();
+    commentsLikesCount[commentId] = likesSnapshot.docs.length;
+  }
+
   void getCommentsLength(postId) async {
     final commentsSnapshot =
         await firestore
@@ -176,6 +222,7 @@ class PostController extends GetxController {
                       .doc(doc['commentBy'])
                       .get();
               console('doc: ${doc['comment']}');
+              getCommentLikes(doc['commentId']);
 
               final userModel = UserModel.fromJson(
                 userSnapshot.data() as Map<String, dynamic>,
