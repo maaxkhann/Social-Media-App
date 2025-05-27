@@ -6,9 +6,6 @@ import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/post_model.dart';
-import 'package:social_media/routes/app_routes.dart';
-import 'package:social_media/views/home/widgets/comment_dialog.dart';
-import 'package:social_media/views/home/widgets/icons_widget.dart';
 import 'package:social_media/views/post/widgets/post_actions.dart';
 import 'package:social_media/views/post/widgets/post_preview.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -112,10 +109,17 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
           ],
         ),
         17.spaceY,
-        CustomText(title: widget.post.text, size: 10),
-        16.spaceY,
-        //  if (post.image.isNotEmpty)
-        PostPreview(post: widget.post),
+        widget.post.mediaUrl == null || widget.post.mediaUrl!.isEmpty
+            ? Center(child: CustomText(title: widget.post.text, size: 16))
+            : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomText(title: widget.post.text, size: 10),
+                16.spaceY,
+                //  if (post.image.isNotEmpty)
+                PostPreview(post: widget.post),
+              ],
+            ),
 
         7.spaceY,
         Padding(

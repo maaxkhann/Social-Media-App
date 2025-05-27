@@ -118,12 +118,21 @@ class _PostViewState extends State<PostView> {
                               ),
                             ),
                             IconButton(
-                              onPressed:
-                                  () => postController.createPost(
-                                    filePath ?? '',
-                                    postCont.text,
-                                    postType ?? '',
-                                  ),
+                              onPressed: () {
+                                if (postCont.text.isEmpty && filePath == null) {
+                                  Get.snackbar(
+                                    'Error',
+                                    'Please add a post content or media.',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  );
+                                  return;
+                                }
+                                postController.createPost(
+                                  filePath ?? '',
+                                  postCont.text,
+                                  postType ?? '',
+                                );
+                              },
                               icon: Icon(
                                 Icons.send,
                                 color: AppColors.black.withValues(alpha: 0.5),

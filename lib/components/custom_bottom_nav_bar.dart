@@ -14,7 +14,7 @@ class CustomBottomNavBar extends StatefulWidget {
 }
 
 class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
-  final postController = Get.put(PostController());
+  final postController = Get.put(PostController(), permanent: true);
   int selectedIndex = 0;
   final List<Widget> screens = [
     HomeView(),

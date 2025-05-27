@@ -29,7 +29,7 @@ class _PostPreviewState extends State<PostPreview> {
 
   void initializeVideo() {
     videoController = VideoPlayerController.networkUrl(
-        Uri.parse(widget.post.mediaUrl),
+        Uri.parse(widget.post.mediaUrl ?? ''),
       )
       ..initialize()
           .then((_) {
@@ -49,7 +49,7 @@ class _PostPreviewState extends State<PostPreview> {
   getThumbnail() async {
     try {
       String? thumbnail = await Thumbnail.ins.generateThumbnail(
-        widget.post.mediaUrl,
+        widget.post.mediaUrl ?? '',
       );
       setState(() {
         thumbnailPath = thumbnail;
@@ -83,7 +83,7 @@ class _PostPreviewState extends State<PostPreview> {
           image:
               widget.post.postType == 'image'
                   ? DecorationImage(
-                    image: NetworkImage(widget.post.mediaUrl),
+                    image: NetworkImage(widget.post.mediaUrl ?? ''),
                     fit: BoxFit.cover,
                   )
                   : null,

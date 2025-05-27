@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
+import 'package:social_media/components/custom_bottom_nav_bar.dart';
 import 'package:social_media/controllers/notifications_controller.dart';
 import 'package:social_media/models/comments_model.dart';
 import 'package:social_media/models/post_model.dart';
@@ -26,34 +27,65 @@ class PostController extends GetxController {
 
   // final Uuid uuid = Uuid();
 
-  Future<void> createPost(String filePath, String text, String postType) async {
-    try {
-      final file = File(filePath);
-      // Determine extension based on type
-      final String extension = postType == 'video' ? 'mp4' : 'jpg';
-      final String fileName =
-          '${DateTime.now().millisecondsSinceEpoch}.$extension';
-      final Reference ref = storage.ref().child("Posts/$fileName");
-      final UploadTask uploadTask = ref.putFile(file);
-      final TaskSnapshot snapshot = await uploadTask;
-      final String downloadUrl = await snapshot.ref.getDownloadURL();
+  Future<void> createPost(
+    String? filePath,
+    String? text,
+    String postType,
+  ) async {
+    console('text before upload: $text');
 
-      DocumentReference docRef = firestore.collection('Posts').doc();
-      final postId = docRef.id;
+    try {
+      String? downloadUrl;
+
+      // Upload file only if filePath is not null or empty
+      if (filePath != null && filePath.isNotEmpty) {
+        final file = File(filePath);
+        if (!await file.exists()) {
+          console('File does not exist: $filePath');
+          Get.snackbar('Error', 'Selected media not found.');
+          return;
+        }
+
+        final String extension = postType == 'video' ? 'mp4' : 'jpg';
+        final String fileName =
+            '${DateTime.now().millisecondsSinceEpoch}.$extension';
+        final Reference ref = storage.ref().child("Posts/$fileName");
+        final UploadTask uploadTask = ref.putFile(file);
+        final TaskSnapshot snapshot = await uploadTask;
+        downloadUrl = await snapshot.ref.getDownloadURL();
+      }
+
+      if ((text == null || text.trim().isEmpty) && downloadUrl == null) {
+        Get.snackbar('Error', 'Please add text or media.');
+        return;
+      }
+
+      final uid = auth.currentUser?.uid;
+      if (uid == null) {
+        Get.snackbar('Auth Error', 'User not logged in.');
+        return;
+      }
+
+      final DocumentReference docRef = firestore.collection('Posts').doc();
+      final String postId = docRef.id;
+
       await docRef.set({
-        await docRef.set({
-          'postId': postId,
-          'postType': postType,
-          'isLiked': false,
-          'mediaUrl': downloadUrl,
-          'text': text,
-          'userId': auth.currentUser?.uid,
-          'timestamp': FieldValue.serverTimestamp(),
-        }),
+        'postId': postId,
+        'postType': postType,
+        'isLiked': false,
+        'mediaUrl': downloadUrl ?? '',
+        'text': text?.trim() ?? '',
+        'userId': uid,
+        'timestamp': FieldValue.serverTimestamp(),
       });
 
-      Get.off(() => HomeView());
-    } catch (e) {}
+      console('Post created: $postId');
+      Get.snackbar('Success', 'Post uploaded successfully');
+      //  Get.off(() => CustomBottomNavBar());
+    } catch (e) {
+      console('Error creating post: $e');
+      Get.snackbar('Error', 'Failed to create post');
+    }
   }
 
   Stream<List<PostModel>> getPostsStream() {
@@ -151,7 +183,11 @@ class PostController extends GetxController {
     );
   }
 
-  Future<void> likeComment(String commentId, String postId, bool isLiked) async {
+  Future<void> likeComment(
+    String commentId,
+    String postId,
+    bool isLiked,
+  ) async {
     final likePostId = '${commentId}_${auth.currentUser?.uid}';
     console('isLiked $isLiked');
     DocumentReference docRef = firestore
