@@ -33,7 +33,7 @@ class CommentsModel {
 
       comment: data['comment'],
       commentBy: data['commentBy'],
-      isLiked: data['isLiked'],
+      isLiked: data['isLiked'] ?? false,
 
       timeStamp: data['timeStamp'],
       user: user,

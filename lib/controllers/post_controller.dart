@@ -251,27 +251,39 @@ class PostController extends GetxController {
     return firestore
         .collection('Comments')
         .where('postId', isEqualTo: postId)
-        // .orderBy('timeStamp', descending: true)
         .snapshots()
         .asyncMap((snapshot) async {
-          console('Docs received: ${snapshot.docs.length}');
+          try {
+            console('Docs received: ${snapshot.docs.length}');
 
-          return await Future.wait(
-            snapshot.docs.map((doc) async {
-              final userSnapshot =
-                  await firestore
-                      .collection('Users')
-                      .doc(doc['commentBy'])
-                      .get();
-              console('doc: ${doc['comment']}');
-              getCommentLikes(doc['commentId']);
+            final comments = await Future.wait(
+              snapshot.docs.map((doc) async {
+                final data = doc.data();
+                console('Comment: ${data['comment']}');
 
-              final userModel = UserModel.fromJson(
-                userSnapshot.data() as Map<String, dynamic>,
-              );
-              return CommentsModel.fromJson(doc.data(), user: userModel);
-            }),
-          );
+                final userSnapshot =
+                    await firestore
+                        .collection('Users')
+                        .doc(data['commentBy'])
+                        .get();
+
+                if (!userSnapshot.exists) {
+                  console(
+                    '⚠️ User not found for comment: ${data['commentBy']}',
+                  );
+                }
+
+                final user = UserModel.fromJson(userSnapshot.data()!);
+                return CommentsModel.fromJson(data, user: user);
+              }),
+            );
+
+            return comments;
+          } catch (e, stack) {
+            console('⚠️ Error in getComments: $e\n$stack');
+            console('⚠️ Error in getComments: $stack');
+            return []; // fallback to empty list to avoid UI crashing
+          }
         });
   }
 }

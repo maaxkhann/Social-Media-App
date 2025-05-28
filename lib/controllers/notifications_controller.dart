@@ -116,6 +116,7 @@ class NotificationsController {
       type: 'reply',
       senderId: userId,
       receiverId: receiverId,
+      postId: commentDoc['postId'],
       commentId: commentId,
       message: 'replied to your comment: "$reply"',
     );

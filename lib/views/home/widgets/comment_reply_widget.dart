@@ -107,33 +107,6 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
           ],
         ),
 
-        // if (showReplyInput) ...[
-        //   SafeArea(
-        //     child: Padding(
-        //       padding: EdgeInsets.only(left: 50, right: 50, top: 4),
-        //       child: CustomTextField(
-        //         controller: replyController,
-        //         hintText: 'Write a reply...',
-        //         suffixIcon: IconButton(
-        //           icon: const Icon(Icons.send),
-        //           onPressed: () async {
-        //             final replyText = replyController.text.trim();
-        //             if (replyText.isNotEmpty) {
-        //               await notificationsController.addReply(
-        //                 comment.commentId,
-        //                 replyText,
-        //               );
-        //               replyController.clear();
-        //               setState(() => showReplyInput = false);
-        //             }
-        //           },
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        //   SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
-        // ],
-
         // Replies
         if (showReplyInput)
           StreamBuilder(
@@ -148,32 +121,60 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                 padding: const EdgeInsets.only(left: 30),
                 itemBuilder: (context, index) {
                   final reply = replies[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundImage: NetworkImage(
-                            reply.user?.image ?? '',
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundImage: NetworkImage(
+                              reply.user?.image ?? '',
+                            ),
                           ),
-                        ),
-                        8.spaceX,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CustomText(
-                                title: reply.user?.name ?? '',
-                                size: 11,
-                                fontWeight: FontWeight.w500,
+                          Expanded(
+                            child: Container(
+                              width: double.infinity,
+                              margin: EdgeInsets.only(
+                                top: 6,
+                                left: 9,
+                                right: 25,
                               ),
-                              CustomText(title: reply.reply, size: 10),
-                            ],
+                              padding: EdgeInsets.only(
+                                left: 12,
+                                right: 12,
+                                top: 7,
+                                bottom: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.lightGrey,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CustomText(
+                                    title: reply.user?.name ?? '',
+                                    size: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  2.spaceY,
+                                  CustomText(
+                                    title: reply.user?.position ?? '',
+                                    size: 8,
+                                    color: AppColors.black.withValues(
+                                      alpha: 0.9,
+                                    ),
+                                  ),
+                                  6.spaceY,
+                                  CustomText(title: reply.reply, size: 8),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                      4.spaceY,
+                    ],
                   );
                 },
               );

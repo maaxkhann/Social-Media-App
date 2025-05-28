@@ -136,6 +136,8 @@ class NotificationsView extends StatelessWidget {
         return notification.message!;
       case 'comment':
         return notification.message!;
+      case 'reply':
+        return notification.message!;
       case 'follow':
         return notification.message!;
       default:
@@ -146,6 +148,14 @@ class NotificationsView extends StatelessWidget {
   navigationControl(NotificationModel notification, PostModel post) {
     switch (notification.type) {
       case 'comment':
+        if (notification.postId != null) {
+          Get.toNamed(
+            AppRoutes.fullPostScreen,
+            arguments: {'post': post, 'commentId': notification.commentId},
+          );
+        }
+        break;
+      case 'reply':
         if (notification.postId != null) {
           Get.toNamed(
             AppRoutes.fullPostScreen,
