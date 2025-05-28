@@ -24,6 +24,12 @@ class PostController extends GetxController {
   RxMap<String, int> likesCounts = <String, int>{}.obs;
   RxMap<String, int> commentsCounts = <String, int>{}.obs;
   RxMap<String, int> commentsLikesCount = <String, int>{}.obs;
+  RxBool autoFocus = false.obs;
+  RxnString replyingToCommentId = RxnString();
+
+  void setAutoFocus(bool val) {
+    autoFocus.value = val;
+  }
 
   // final Uuid uuid = Uuid();
 

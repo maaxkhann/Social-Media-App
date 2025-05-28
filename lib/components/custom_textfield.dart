@@ -10,6 +10,7 @@ class CustomTextField extends StatefulWidget {
   final Widget? suffixIcon;
   final TextInputType keyboardType;
   final bool isBorder;
+  final bool autoFocus;
   final int maxLines;
   final Color? fillColor;
   final Color? hintColor;
@@ -22,6 +23,7 @@ class CustomTextField extends StatefulWidget {
     this.suffixIcon,
     this.keyboardType = TextInputType.text,
     this.isBorder = true,
+    this.autoFocus = false,
     this.maxLines = 1,
     this.fillColor = AppColors.white,
     this.hintColor = AppColors.black,
@@ -48,6 +50,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         controller: widget.controller,
         obscureText: _obscure,
         textAlignVertical: TextAlignVertical.center,
+        autofocus: widget.autoFocus,
         keyboardType:
             widget.maxLines != 1
                 ? TextInputType.multiline

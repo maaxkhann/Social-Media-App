@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:social_media/models/notifications_model.dart';
 import 'package:social_media/models/post_model.dart';
+import 'package:social_media/models/reply_model.dart';
+import 'package:social_media/models/user_model.dart';
 import 'package:social_media/shared/console.dart';
 
 class NotificationsController {
@@ -117,5 +119,32 @@ class NotificationsController {
       commentId: commentId,
       message: 'replied to your comment: "$reply"',
     );
+  }
+
+  Stream<List<ReplyModel>> getRepliesStream(String commentId) {
+    console('commentId $commentId');
+    return firestore
+        .collection('Comments')
+        .doc(commentId)
+        .collection('Replies')
+        .orderBy('timestamp', descending: false)
+        .snapshots()
+        .asyncMap((snapshot) async {
+          final replies = await Future.wait(
+            snapshot.docs.map((doc) async {
+              final data = doc.data();
+              final userDoc =
+                  await firestore
+                      .collection('Users')
+                      .doc(data['replyBy'])
+                      .get();
+              final user = UserModel.fromJson(userDoc.data()!);
+              return ReplyModel.fromJson(data, user: user);
+            }),
+          );
+          console('repliessssssssssssssssss $replies');
+
+          return replies;
+        });
   }
 }

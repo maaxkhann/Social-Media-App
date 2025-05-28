@@ -18,13 +18,14 @@ class ReplyModel {
     this.user,
   });
 
-  factory ReplyModel.fromJson(Map<String, dynamic> json) {
+  factory ReplyModel.fromJson(Map<String, dynamic> json, {UserModel? user}) {
     return ReplyModel(
       replyId: json['replyId'],
       commentId: json['commentId'],
       reply: json['reply'],
       replyBy: json['replyBy'],
       timestamp: json['timestamp'],
+      user: user,
     );
   }
 
