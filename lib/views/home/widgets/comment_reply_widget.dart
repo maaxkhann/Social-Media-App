@@ -219,14 +219,14 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                             12.spaceX,
                             InkWell(
                               onTap: () {
-                                // widget.isFocus(true);
-                                // postController.setAutoFocus(true);
-                                // postController.replyingToCommentId.value =
-                                //     comment.commentId;
-                                // setState(() {
-                                //   showReplyInput = !showReplyInput;
-                                //   console('showRpppppppp $showReplyInput');
-                                // });
+                                widget.isFocus(true);
+                                postController.setAutoFocus(true);
+                                postController.replyingToCommentId.value =
+                                    comment.commentId;
+                                setState(() {
+                                  // showReplyInput = !showReplyInput;
+                                  // console('showRpppppppp $showReplyInput');
+                                });
                               },
                               child: CustomText(title: 'Reply', size: 10),
                             ),
