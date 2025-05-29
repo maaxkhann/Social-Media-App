@@ -42,6 +42,7 @@ class ProfileController extends GetxController {
       'timeStamp': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
     getFollowStatus(followingId);
+    fetchFollowersAndFollowing();
     followStatusMap[followingId] = isFollowed.obs;
 
     await notificationsController.createNotification(
