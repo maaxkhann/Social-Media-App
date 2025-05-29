@@ -140,6 +140,8 @@ class NotificationsView extends StatelessWidget {
         return notification.message!;
       case 'follow':
         return notification.message!;
+      case 'unfollow':
+        return notification.message!;
       default:
         return ' sent you a notification';
     }

@@ -51,10 +51,12 @@ class _PostPreviewState extends State<PostPreview> {
       String? thumbnail = await Thumbnail.ins.generateThumbnail(
         widget.post.mediaUrl ?? '',
       );
+      if (!mounted) return;
       setState(() {
         thumbnailPath = thumbnail;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         hasError = true;
       });
