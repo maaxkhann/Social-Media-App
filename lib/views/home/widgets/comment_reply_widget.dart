@@ -66,7 +66,7 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                         ),
                         11.spaceX,
                         CustomText(
-                          title: '.',
+                          title: '•',
                           size: 10,
                           color: AppColors.black.withValues(alpha: 0.5),
                         ),
@@ -196,7 +196,7 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                             ),
                             11.spaceX,
                             CustomText(
-                              title: '.',
+                              title: '•',
                               size: 10,
                               color: AppColors.black.withValues(alpha: 0.5),
                             ),

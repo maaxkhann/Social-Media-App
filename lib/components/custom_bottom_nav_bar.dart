@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/controllers/post_controller.dart';
+import 'package:social_media/views/chat/messages_view.dart';
 import 'package:social_media/views/home/home_view.dart';
 import 'package:social_media/views/notification/notifications_view.dart';
 import 'package:social_media/views/post/post_view.dart';
@@ -21,7 +22,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
     HomeView(),
     PostView(),
     NotificationsView(),
-    PostView(),
+    MessagesView(),
     ProfileView(),
   ];
 

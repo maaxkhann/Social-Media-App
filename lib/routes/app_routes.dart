@@ -7,4 +7,5 @@ abstract class AppRoutes {
   static const notificationsView = "/notificationsView";
   static const fullPostScreen = "/fullPostScreen";
   static const profileView = "/profileView";
+  static const messagesView = "/messagesView";
 }

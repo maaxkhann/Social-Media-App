@@ -8,6 +8,7 @@ import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/comments_model.dart';
+import 'package:social_media/shared/console.dart';
 import 'package:social_media/views/home/widgets/comment_reply_widget.dart';
 
 showCommentSheet(
@@ -263,6 +264,7 @@ showCommentSheet(
                       fillColor: AppColors.primaryColor,
                       hintColor: AppColors.white,
                       autoFocus: autoFocus,
+
                       hintText:
                           postController.autoFocus.value
                               ? 'Write a reply...'

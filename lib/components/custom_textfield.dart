@@ -12,6 +12,7 @@ class CustomTextField extends StatefulWidget {
   final bool isBorder;
   final bool autoFocus;
   final int maxLines;
+  final FocusNode? focusNode;
   final Color? fillColor;
   final Color? hintColor;
 
@@ -25,6 +26,7 @@ class CustomTextField extends StatefulWidget {
     this.isBorder = true,
     this.autoFocus = false,
     this.maxLines = 1,
+    this.focusNode,
     this.fillColor = AppColors.white,
     this.hintColor = AppColors.black,
   });
@@ -51,6 +53,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         obscureText: _obscure,
         textAlignVertical: TextAlignVertical.center,
         autofocus: widget.autoFocus,
+        focusNode: widget.focusNode ?? FocusNode(),
         keyboardType:
             widget.maxLines != 1
                 ? TextInputType.multiline
@@ -61,7 +64,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
         decoration: InputDecoration(
           fillColor: widget.fillColor,
           filled: true,
-
           contentPadding: const EdgeInsets.symmetric(horizontal: 15),
           hintText: widget.hintText,
           hintStyle: TextStyle(fontSize: 12, color: widget.hintColor),
