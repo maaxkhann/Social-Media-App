@@ -7,6 +7,7 @@ class ReplyModel {
   final String reply;
   final String replyBy;
   final Timestamp timestamp;
+  final bool isLiked;
   final UserModel? user;
 
   ReplyModel({
@@ -14,6 +15,7 @@ class ReplyModel {
     required this.commentId,
     required this.reply,
     required this.replyBy,
+    required this.isLiked,
     required this.timestamp,
     this.user,
   });
@@ -24,6 +26,7 @@ class ReplyModel {
       commentId: json['commentId'],
       reply: json['reply'],
       replyBy: json['replyBy'],
+      isLiked: json['isLiked'] ?? false,
       timestamp: json['timestamp'],
       user: user,
     );
@@ -35,6 +38,7 @@ class ReplyModel {
       'commentId': commentId,
       'reply': reply,
       'replyBy': replyBy,
+      'isLiked': isLiked,
       'timestamp': timestamp,
     };
   }

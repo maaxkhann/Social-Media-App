@@ -8,7 +8,6 @@ import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/comments_model.dart';
-import 'package:social_media/shared/console.dart';
 import 'package:social_media/views/home/widgets/comment_reply_widget.dart';
 
 showCommentSheet(
@@ -53,9 +52,6 @@ showCommentSheet(
                   StreamBuilder<List<CommentsModel>>(
                     stream: commentStream,
                     builder: (context, snapshot) {
-                      print(
-                        'Snapshot data: ${snapshot.data?.map((e) => e.comment).toList()}',
-                      );
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }

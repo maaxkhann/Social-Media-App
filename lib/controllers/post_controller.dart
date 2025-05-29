@@ -4,13 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
-import 'package:social_media/components/custom_bottom_nav_bar.dart';
 import 'package:social_media/controllers/notifications_controller.dart';
 import 'package:social_media/models/comments_model.dart';
 import 'package:social_media/models/post_model.dart';
 import 'package:social_media/models/user_model.dart';
 import 'package:social_media/shared/console.dart';
-import 'package:social_media/views/home/home_view.dart';
 
 class PostController extends GetxController {
   final notificationsController = Get.put(NotificationsController());
@@ -24,6 +22,7 @@ class PostController extends GetxController {
   RxMap<String, int> likesCounts = <String, int>{}.obs;
   RxMap<String, int> commentsCounts = <String, int>{}.obs;
   RxMap<String, int> commentsLikesCount = <String, int>{}.obs;
+  RxMap<String, int> commentsReplyLikesCount = <String, int>{}.obs;
   RxBool autoFocus = false.obs;
   RxnString replyingToCommentId = RxnString();
 
@@ -227,6 +226,55 @@ class PostController extends GetxController {
     }
   }
 
+  Future<void> likeCommentReply(
+    String commentId,
+    String replyId,
+    String postId,
+    bool isLiked,
+  ) async {
+    final likeCommentId = '${replyId}_${auth.currentUser?.uid}';
+    console('isLiked $isLiked');
+    DocumentReference docRef = firestore
+        .collection('Comments')
+        .doc(commentId)
+        .collection('Replies')
+        .doc(replyId)
+        .collection('Likes')
+        .doc(likeCommentId);
+
+    await docRef.set({
+      'isLiked': isLiked,
+      'likeId': likeCommentId,
+      'likedBy': auth.currentUser?.uid,
+    });
+    firestore
+        .collection('Comments')
+        .doc(commentId)
+        .collection('Replies')
+        .doc(replyId)
+        .update({'isLiked': isLiked});
+    getCommentReplyLikes(commentId, replyId);
+    final replySnapshot =
+        await firestore
+            .collection('Comments')
+            .doc(commentId)
+            .collection('Replies')
+            .doc(replyId)
+            .get();
+    final receiverId = replySnapshot['replyBy'];
+    // Send notification only when liked (not when unliked)
+    if (isLiked) {
+      await notificationsController.createNotification(
+        type: 'like_comment',
+        senderId: auth.currentUser!.uid,
+        receiverId: receiverId,
+        postId: postId,
+        commentId: commentId,
+        message: 'liked your comment: "${replySnapshot['reply']}"',
+      );
+    }
+  }
+
   void getCommentLikes(commentId) async {
     final likesSnapshot =
         await firestore
@@ -236,6 +284,25 @@ class PostController extends GetxController {
             .where('isLiked', isEqualTo: true)
             .get();
     commentsLikesCount[commentId] = likesSnapshot.docs.length;
+    console('snapsshot docs length ${likesSnapshot.docs.length}');
+    console(
+      'snapsshot commentsssss docs length ${commentsLikesCount[commentId]}',
+    );
+  }
+
+  void getCommentReplyLikes(String parentCommentId, String replyId) async {
+    final likesSnapshot =
+        await firestore
+            .collection('Comments')
+            .doc(parentCommentId)
+            .collection('Replies')
+            .doc(replyId)
+            .collection('Likes')
+            .where('isLiked', isEqualTo: true)
+            .get();
+    console('commentsREplyLikesCount ${likesSnapshot.docs.length}');
+
+    commentsReplyLikesCount[replyId] = likesSnapshot.docs.length;
   }
 
   void getCommentsLength(postId) async {
@@ -260,6 +327,7 @@ class PostController extends GetxController {
               snapshot.docs.map((doc) async {
                 final data = doc.data();
                 console('Comment: ${data['comment']}');
+                getCommentLikes(doc['commentId']);
 
                 final userSnapshot =
                     await firestore
@@ -272,7 +340,21 @@ class PostController extends GetxController {
                     '⚠️ User not found for comment: ${data['commentBy']}',
                   );
                 }
+                // get replies
+                final repliesSnapshot =
+                    await firestore
+                        .collection('Comments')
+                        .doc(doc['commentId'])
+                        .collection('Replies')
+                        .get();
 
+                for (final replyDoc in repliesSnapshot.docs) {
+                  final replyId = replyDoc.id;
+                  getCommentReplyLikes(
+                    doc['commentId'],
+                    replyId,
+                  ); // reply likes
+                }
                 final user = UserModel.fromJson(userSnapshot.data()!);
                 return CommentsModel.fromJson(data, user: user);
               }),

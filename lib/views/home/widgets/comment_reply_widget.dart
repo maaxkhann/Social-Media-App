@@ -8,6 +8,7 @@ import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/comments_model.dart';
+import 'package:social_media/shared/console.dart';
 
 class CommentReplyWidget extends StatefulWidget {
   final CommentsModel comment;
@@ -94,6 +95,7 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                                 comment.commentId;
                             setState(() {
                               showReplyInput = !showReplyInput;
+                              console('showRpppppppp $showReplyInput');
                             });
                           },
                           child: CustomText(title: 'Reply', size: 10),
@@ -174,6 +176,63 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                         ],
                       ),
                       4.spaceY,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 50),
+                        child: Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                postController.likeCommentReply(
+                                  comment.commentId,
+                                  reply.replyId,
+                                  comment.postId,
+                                  !reply.isLiked,
+                                );
+                              },
+                              child: CustomText(
+                                title: reply.isLiked ? 'Unlike' : 'Like',
+                                size: 10,
+                              ),
+                            ),
+                            11.spaceX,
+                            CustomText(
+                              title: '.',
+                              size: 10,
+                              color: AppColors.black.withValues(alpha: 0.5),
+                            ),
+                            11.spaceX,
+                            Icon(
+                              reply.isLiked
+                                  ? Icons.thumb_up
+                                  : Icons.thumb_up_outlined,
+                              color: AppColors.blue,
+                              size: 9,
+                            ),
+                            3.spaceX,
+                            Obx(() {
+                              return CustomText(
+                                title:
+                                    '${postController.commentsReplyLikesCount[reply.replyId] ?? '0'}',
+                                size: 10,
+                              );
+                            }),
+                            12.spaceX,
+                            InkWell(
+                              onTap: () {
+                                // widget.isFocus(true);
+                                // postController.setAutoFocus(true);
+                                // postController.replyingToCommentId.value =
+                                //     comment.commentId;
+                                // setState(() {
+                                //   showReplyInput = !showReplyInput;
+                                //   console('showRpppppppp $showReplyInput');
+                                // });
+                              },
+                              child: CustomText(title: 'Reply', size: 10),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   );
                 },

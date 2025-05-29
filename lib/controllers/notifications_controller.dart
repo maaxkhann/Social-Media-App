@@ -131,21 +131,26 @@ class NotificationsController {
         .orderBy('timestamp', descending: false)
         .snapshots()
         .asyncMap((snapshot) async {
-          final replies = await Future.wait(
-            snapshot.docs.map((doc) async {
-              final data = doc.data();
-              final userDoc =
-                  await firestore
-                      .collection('Users')
-                      .doc(data['replyBy'])
-                      .get();
-              final user = UserModel.fromJson(userDoc.data()!);
-              return ReplyModel.fromJson(data, user: user);
-            }),
-          );
-          console('repliessssssssssssssssss $replies');
-
-          return replies;
+          try {
+            final replies = await Future.wait(
+              snapshot.docs.map((doc) async {
+                final data = doc.data();
+                final userDoc =
+                    await firestore
+                        .collection('Users')
+                        .doc(data['replyBy'])
+                        .get();
+                final user = UserModel.fromJson(userDoc.data()!);
+                return ReplyModel.fromJson(data, user: user);
+              }),
+            );
+            console('repliessssssssssssssssss $replies');
+            return replies;
+          } catch (e, stack) {
+            console('⚠️ Error in getCommentsReply: $e\n$stack');
+            console('⚠️ Error in getCommentsReply: $stack');
+            return []; // fallback to empty list to avoid UI crashing
+          }
         });
   }
 }
