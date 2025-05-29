@@ -11,6 +11,8 @@ class ProfileController extends GetxController {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   Rx<UserModel?> userModel = Rx<UserModel?>(null);
   var followStatusMap = <String, RxBool>{}.obs;
+  RxInt followersCount = 0.obs;
+  RxInt followingCount = 0.obs;
 
   @override
   void onInit() {
@@ -25,6 +27,7 @@ class ProfileController extends GetxController {
       userModel.value = UserModel.fromJson(
         docRef.data() as Map<String, dynamic>,
       );
+      fetchFollowersAndFollowing();
     }
   }
 
@@ -71,5 +74,31 @@ class ProfileController extends GetxController {
       return true;
     }
     return false;
+  }
+
+  void fetchFollowersAndFollowing() async {
+    try {
+      // Count followers (users who follow current user)
+      final followersSnapshot =
+          await firestore
+              .collection('Follows')
+              .where('followingId', isEqualTo: auth.currentUser?.uid)
+              .where('isFollowed', isEqualTo: true)
+              .get();
+
+      followersCount.value = followersSnapshot.docs.length;
+
+      // Count following (users whom current user follows)
+      final followingSnapshot =
+          await firestore
+              .collection('Follows')
+              .where('followerId', isEqualTo: auth.currentUser?.uid)
+              .where('isFollowed', isEqualTo: true)
+              .get();
+
+      followingCount.value = followingSnapshot.docs.length;
+    } catch (e) {
+      console('Error fetching follow data: $e');
+    }
   }
 }

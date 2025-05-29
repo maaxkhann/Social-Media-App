@@ -5,6 +5,7 @@ import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/views/home/home_view.dart';
 import 'package:social_media/views/notification/notifications_view.dart';
 import 'package:social_media/views/post/post_view.dart';
+import 'package:social_media/views/profile/profile_view.dart';
 
 class CustomBottomNavBar extends StatefulWidget {
   const CustomBottomNavBar({super.key});
@@ -21,7 +22,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
     PostView(),
     NotificationsView(),
     PostView(),
-    PostView(),
+    ProfileView(),
   ];
 
   void onItemTapped(int index) {

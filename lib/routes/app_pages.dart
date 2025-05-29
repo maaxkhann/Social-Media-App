@@ -9,6 +9,7 @@ import 'package:social_media/views/auth/register_view.dart';
 import 'package:social_media/views/auth/splash_view.dart';
 import 'package:social_media/views/post/full_post_screen.dart';
 import 'package:social_media/views/notification/notifications_view.dart';
+import 'package:social_media/views/profile/profile_view.dart';
 
 class AppPages {
   static final routes = [
@@ -54,6 +55,11 @@ class AppPages {
       name: AppRoutes.fullPostScreen,
       transition: Transition.fadeIn,
       page: () => FullPostScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.profileView,
+      transition: Transition.fadeIn,
+      page: () => ProfileView(),
     ),
   ];
 }

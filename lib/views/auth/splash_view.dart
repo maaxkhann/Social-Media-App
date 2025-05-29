@@ -44,13 +44,13 @@ class _SplashViewState extends State<SplashView>
       final isLogin = sp.getBool('isLogin') ?? false;
 
       if (isLogin) {
-        Get.offNamed(AppRoutes.customBottomNavBar);
+        Get.offAllNamed(AppRoutes.customBottomNavBar);
       } else {
-        Get.offNamed(AppRoutes.loginView);
+        Get.offAllNamed(AppRoutes.loginView);
       }
     } catch (e) {
       console('SharedPreferences error: $e');
-      Get.offNamed(AppRoutes.loginView);
+      Get.offAllNamed(AppRoutes.loginView);
     }
   }
 

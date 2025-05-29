@@ -105,7 +105,7 @@ class AuthController extends GetxController {
         if (userCredential.user != null) {
           await sp.setBool('isLogin', true);
           Pops.stopLoading();
-          Get.offNamed(AppRoutes.customBottomNavBar);
+          Get.offAllNamed(AppRoutes.customBottomNavBar);
         }
       }
     } on FirebaseAuthException catch (e) {
