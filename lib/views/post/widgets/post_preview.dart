@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/models/post_model.dart';
 import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/utilities/thumbnail.dart';
@@ -89,7 +90,7 @@ class _PostPreviewState extends State<PostPreview> {
                     fit: BoxFit.cover,
                   )
                   : null,
-          color: widget.post.postType == 'video' ? Colors.black : null,
+          color: widget.post.postType == 'video' ? AppColors.black : null,
         ),
         child:
             widget.post.postType == 'video'

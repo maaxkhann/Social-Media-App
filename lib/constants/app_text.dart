@@ -14,7 +14,7 @@ class CustomText extends StatelessWidget {
   final FontWeight fontWeight;
   final double size;
   final double height;
-  final int maxLine;
+  final dynamic maxLine;
   const CustomText({
     super.key,
     this.maxLine = 5,

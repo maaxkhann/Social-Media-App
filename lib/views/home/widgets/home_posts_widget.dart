@@ -6,6 +6,7 @@ import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/post_model.dart';
+import 'package:social_media/shared/expandable_text.dart';
 import 'package:social_media/views/post/widgets/post_actions.dart';
 import 'package:social_media/views/post/widgets/post_preview.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -24,6 +25,7 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
   final profileController = Get.find<ProfileController>();
   final commentController = TextEditingController();
   bool isFollowed = false;
+  bool isFullText = false;
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) => followStatus());
@@ -110,11 +112,22 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
         ),
         17.spaceY,
         widget.post.mediaUrl == null || widget.post.mediaUrl!.isEmpty
-            ? Center(child: CustomText(title: widget.post.text, size: 16))
+            ? Center(
+              child: ExpandableText(
+                text:
+                    '\nwidget.post.text\nwidget.post.text\nwidget.post.text\nwidget.post.text\nwidget.post.text',
+                trimLines: 4,
+                fontSize: 16,
+              ),
+            )
             : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomText(title: widget.post.text, size: 10),
+                ExpandableText(
+                  text: widget.post.text,
+                  trimLines: 3,
+                  fontSize: 11,
+                ),
                 16.spaceY,
                 //  if (post.image.isNotEmpty)
                 PostPreview(post: widget.post),
