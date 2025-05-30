@@ -54,7 +54,7 @@ class GroupWidget extends StatelessWidget {
                       Expanded(
                         child: CustomText(
                           title:
-                              'Hi Iike your work which is very amazinI want to know more...',
+                              'Hi Iike your work which is very amazing want to know more...',
                           size: 11,
                           fontWeight: FontWeight.w600,
                         ),

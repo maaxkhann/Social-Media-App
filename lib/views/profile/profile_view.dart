@@ -18,8 +18,8 @@ class ProfileView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              12.spaceY,
-              CustomAppBar(),
+              // 12.spaceY,
+              // CustomAppBar(),
               34.spaceY,
               ProfileWidget(),
               20.spaceY,

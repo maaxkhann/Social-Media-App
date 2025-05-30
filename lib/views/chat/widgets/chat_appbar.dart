@@ -12,14 +12,17 @@ class ChatAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        35.spaceY,
+        20.spaceY,
         Row(
           children: [
-            CircleAvatar(
-              radius: 25,
-              foregroundImage: NetworkImage(
-                image ??
-                    'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+            Padding(
+              padding: const EdgeInsets.only(left: 20),
+              child: CircleAvatar(
+                radius: 25,
+                foregroundImage: NetworkImage(
+                  image ??
+                      'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                ),
               ),
             ),
           ],

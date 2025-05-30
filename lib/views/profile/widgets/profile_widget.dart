@@ -28,7 +28,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
       return Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          CircleAvatar(radius: 38),
+          CircleAvatar(
+            radius: 38,
+            foregroundImage: NetworkImage(
+              profileController.userModel.value?.image ?? '',
+            ),
+          ),
           10.spaceX,
           Expanded(
             flex: 8,
