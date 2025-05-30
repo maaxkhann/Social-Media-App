@@ -6,7 +6,6 @@ import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/post_model.dart';
-import 'package:social_media/shared/expandable_text.dart';
 import 'package:social_media/views/post/widgets/post_actions.dart';
 import 'package:social_media/views/post/widgets/post_preview.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -114,8 +113,7 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
         widget.post.mediaUrl == null || widget.post.mediaUrl!.isEmpty
             ? Center(
               child: ExpandableText(
-                text:
-                    '\nwidget.post.text\nwidget.post.text\nwidget.post.text\nwidget.post.text\nwidget.post.text',
+                text: widget.post.text,
                 trimLines: 4,
                 fontSize: 16,
               ),
@@ -175,6 +173,73 @@ class _HomePostsWidgetState extends State<HomePostsWidget> {
         Divider(color: AppColors.black.withValues(alpha: 0.18)),
         8.spaceY,
         PostActions(post: widget.post),
+      ],
+    );
+  }
+}
+
+class ExpandableText extends StatefulWidget {
+  final String text;
+  final int trimLines;
+  final double fontSize;
+
+  const ExpandableText({
+    super.key,
+    required this.text,
+    this.trimLines = 3,
+    this.fontSize = 14,
+  });
+
+  @override
+  State<ExpandableText> createState() => _ExpandableTextState();
+}
+
+class _ExpandableTextState extends State<ExpandableText> {
+  bool isExpanded = false;
+  bool showToggle = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkOverflow());
+  }
+
+  void _checkOverflow() {
+    final span = TextSpan(
+      text: widget.text,
+      style: TextStyle(fontSize: widget.fontSize),
+    );
+    final tp = TextPainter(
+      text: span,
+      maxLines: widget.trimLines,
+      textDirection: TextDirection.ltr,
+    );
+    tp.layout(maxWidth: MediaQuery.of(context).size.width * 0.85);
+    setState(() {
+      showToggle = tp.didExceedMaxLines;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomText(
+          title: widget.text,
+          size: widget.fontSize,
+          maxLine: isExpanded ? 50 : widget.trimLines,
+          txtOverFlow:
+              isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+        ),
+        if (showToggle)
+          TextButton(
+            onPressed: () => setState(() => isExpanded = !isExpanded),
+            child: CustomText(
+              title: isExpanded ? 'See Less' : 'See More',
+              size: 10,
+            ),
+          ),
       ],
     );
   }
