@@ -14,7 +14,7 @@ class ProfileWidget extends StatefulWidget {
 }
 
 class _ProfileWidgetState extends State<ProfileWidget> {
-  final profileController = ProfileController();
+  final profileController = Get.find<ProfileController>();
   @override
   void initState() {
     profileController.getUserData();
@@ -23,7 +23,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
   @override
   Widget build(BuildContext context) {
-    console('asldkj ${profileController.userModel.value?.name}');
     return Obx(() {
       return Row(
         mainAxisAlignment: MainAxisAlignment.start,
