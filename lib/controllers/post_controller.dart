@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:social_media/controllers/notifications_controller.dart';
 import 'package:social_media/models/comments_model.dart';
 import 'package:social_media/models/post_model.dart';
+import 'package:social_media/models/reply_model.dart';
 import 'package:social_media/models/user_model.dart';
 import 'package:social_media/shared/console.dart';
 
@@ -376,6 +377,7 @@ class PostController extends GetxController {
   RxBool isMoreCommentsLoading = false.obs;
 
   Future<List<CommentsModel>> fetchCommentsPaginated(String postId) async {
+    if (isLoadingComments || !hasMoreComments) return [];
     Query query = firestore
         .collection('Comments')
         .where('postId', isEqualTo: postId)
@@ -435,8 +437,9 @@ class PostController extends GetxController {
   }
 
   void loadMoreComments(String postId) async {
-    if (isMoreCommentsLoading.value || isLoadingComments || !hasMoreComments)
+    if (isMoreCommentsLoading.value || isLoadingComments || !hasMoreComments) {
       return;
+    }
     isMoreCommentsLoading.value = true;
     final newComments = await fetchCommentsPaginated(postId);
     paginatedComments.addAll(newComments);

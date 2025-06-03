@@ -54,13 +54,13 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                         InkWell(
                           onTap: () {
                             postController.likeComment(
-                              comment.commentId ?? '',
-                              comment.postId ?? '',
-                              !comment.isLiked!,
+                              comment.commentId,
+                              comment.postId,
+                              !comment.isLiked,
                             );
                           },
                           child: CustomText(
-                            title: comment.isLiked! ? 'Unlike' : 'Like',
+                            title: comment.isLiked ? 'Unlike' : 'Like',
                             size: 10,
                           ),
                         ),
@@ -72,7 +72,7 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                         ),
                         11.spaceX,
                         Icon(
-                          comment.isLiked!
+                          comment.isLiked
                               ? Icons.thumb_up
                               : Icons.thumb_up_outlined,
                           color: AppColors.blue,
@@ -111,136 +111,156 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
 
         // Replies
         if (showReplyInput)
-          StreamBuilder(
-            stream: notificationsController.getRepliesStream(
-              comment.commentId ?? '',
-            ),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox();
-              final replies = snapshot.data!;
-              return ListView.builder(
-                itemCount: replies.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(left: 30),
-                itemBuilder: (context, index) {
-                  final reply = replies[index];
-                  return Column(
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundImage: NetworkImage(
-                              reply.user?.image ?? '',
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              margin: EdgeInsets.only(
-                                top: 6,
-                                left: 9,
-                                right: 25,
-                              ),
-                              padding: EdgeInsets.only(
-                                left: 12,
-                                right: 12,
-                                top: 7,
-                                bottom: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.lightGrey,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  CustomText(
-                                    title: reply.user?.name ?? '',
-                                    size: 10,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  2.spaceY,
-                                  CustomText(
-                                    title: reply.user?.position ?? '',
-                                    size: 8,
-                                    color: AppColors.black.withValues(
-                                      alpha: 0.9,
-                                    ),
-                                  ),
-                                  6.spaceY,
-                                  CustomText(title: reply.reply, size: 8),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      4.spaceY,
-                      Padding(
-                        padding: const EdgeInsets.only(left: 50),
-                        child: Row(
+          Obx(() {
+            final replies =
+                notificationsController.paginatedReplies[comment.commentId];
+            final isLoading =
+                notificationsController.isReplyLoading[comment.commentId] ??
+                false.obs;
+
+            if (replies == null) {
+              notificationsController.initReplyPagination(comment.commentId);
+              notificationsController.fetchRepliesPaginated(comment.commentId);
+              return const SizedBox(); // Will re-render when loaded
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ListView.builder(
+                  itemCount: replies.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(left: 30),
+                  itemBuilder: (context, index) {
+                    final reply = replies[index];
+                    return Column(
+                      children: [
+                        Row(
                           children: [
-                            InkWell(
-                              onTap: () {
-                                postController.likeCommentReply(
-                                  comment.commentId ?? '',
-                                  reply.replyId,
-                                  comment.postId ?? '',
-                                  !reply.isLiked,
-                                );
-                              },
-                              child: CustomText(
-                                title: reply.isLiked ? 'Unlike' : 'Like',
-                                size: 10,
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundImage: NetworkImage(
+                                reply.user?.image ?? '',
                               ),
                             ),
-                            11.spaceX,
-                            CustomText(
-                              title: '•',
-                              size: 10,
-                              color: AppColors.black.withValues(alpha: 0.5),
-                            ),
-                            11.spaceX,
-                            Icon(
-                              reply.isLiked
-                                  ? Icons.thumb_up
-                                  : Icons.thumb_up_outlined,
-                              color: AppColors.blue,
-                              size: 9,
-                            ),
-                            3.spaceX,
-                            Obx(() {
-                              return CustomText(
-                                title:
-                                    '${postController.commentsReplyLikesCount[reply.replyId] ?? '0'}',
-                                size: 10,
-                              );
-                            }),
-                            12.spaceX,
-                            InkWell(
-                              onTap: () {
-                                widget.isFocus(true);
-                                postController.setAutoFocus(true);
-                                postController.replyingToCommentId.value =
-                                    comment.commentId;
-                                setState(() {
-                                  // showReplyInput = !showReplyInput;
-                                  // console('showRpppppppp $showReplyInput');
-                                });
-                              },
-                              child: CustomText(title: 'Reply', size: 10),
+                            Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.only(
+                                  top: 6,
+                                  left: 9,
+                                  right: 25,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.lightGrey,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    CustomText(
+                                      title: reply.user?.name ?? '',
+                                      size: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    2.spaceY,
+                                    CustomText(
+                                      title: reply.user?.position ?? '',
+                                      size: 8,
+                                      color: AppColors.black.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                    ),
+                                    6.spaceY,
+                                    CustomText(title: reply.reply, size: 8),
+                                  ],
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
+                        4.spaceY,
+                        Padding(
+                          padding: const EdgeInsets.only(left: 50),
+                          child: Row(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  postController.likeCommentReply(
+                                    comment.commentId,
+                                    reply.replyId,
+                                    comment.postId,
+                                    !reply.isLiked,
+                                  );
+                                },
+                                child: CustomText(
+                                  title: reply.isLiked ? 'Unlike' : 'Like',
+                                  size: 10,
+                                ),
+                              ),
+                              11.spaceX,
+                              CustomText(
+                                title: '•',
+                                size: 10,
+                                color: AppColors.black.withValues(alpha: 0.5),
+                              ),
+                              11.spaceX,
+                              Icon(
+                                reply.isLiked
+                                    ? Icons.thumb_up
+                                    : Icons.thumb_up_outlined,
+                                color: AppColors.blue,
+                                size: 9,
+                              ),
+                              3.spaceX,
+                              Obx(() {
+                                return CustomText(
+                                  title:
+                                      '${postController.commentsReplyLikesCount[reply.replyId] ?? '0'}',
+                                  size: 10,
+                                );
+                              }),
+                              12.spaceX,
+                              InkWell(
+                                onTap: () {
+                                  widget.isFocus(true);
+                                  postController.setAutoFocus(true);
+                                  postController.replyingToCommentId.value =
+                                      comment.commentId;
+                                },
+                                child: CustomText(title: 'Reply', size: 10),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                6.spaceY,
+                Center(
+                  child: Obx(
+                    () =>
+                        isLoading.value
+                            ? const CircularProgressIndicator()
+                            : !notificationsController.hasMoreReplies[comment
+                                .commentId]!
+                            ? SizedBox()
+                            : TextButton(
+                              onPressed:
+                                  () => notificationsController
+                                      .fetchRepliesPaginated(comment.commentId),
+                              child: const Text('Load more replies'),
+                            ),
+                  ),
+                ),
+              ],
+            );
+          }),
         8.spaceY,
       ],
     );

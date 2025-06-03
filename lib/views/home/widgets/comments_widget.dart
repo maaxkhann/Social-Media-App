@@ -55,9 +55,9 @@ class _CommentsWidgetState extends State<CommentsWidget> {
           );
         }
         final comment = comments[index];
-        if (comment.commentId != null) {
-          widget.commentKeys[comment.commentId] = key;
-        }
+        // if (comment.commentId != null) {
+        widget.commentKeys[comment.commentId] = key;
+        // }
 
         return Container(
           key: key,
@@ -69,7 +69,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                 padding: const EdgeInsets.only(top: 12),
                 child: CircleAvatar(
                   radius: 24,
-                  foregroundImage: NetworkImage(comment?.user?.image ?? ''),
+                  foregroundImage: NetworkImage(comment.user?.image ?? ''),
                 ),
               ),
               Expanded(
@@ -108,7 +108,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                                       Row(
                                         children: [
                                           CustomText(
-                                            title: comment?.user?.name ?? '',
+                                            title: comment.user?.name ?? '',
                                             size: 10,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -117,21 +117,21 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                                             final isFollowed =
                                                 profileController
                                                     .followStatusMap[comment
-                                                        ?.commentBy]
+                                                        .commentBy]
                                                     ?.value ??
                                                 false;
                                             return profileController
                                                         .auth
                                                         .currentUser
                                                         ?.uid ==
-                                                    comment?.user?.userId
+                                                    comment.user?.userId
                                                 ? SizedBox.shrink()
                                                 : InkWell(
                                                   onTap:
                                                       () => profileController
                                                           .follow(
                                                             !isFollowed,
-                                                            comment!.commentBy,
+                                                            comment.commentBy,
                                                           ),
                                                   child: CustomText(
                                                     title:
@@ -148,7 +148,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                                       ),
                                       4.spaceY,
                                       CustomText(
-                                        title: comment?.user?.position ?? '',
+                                        title: comment.user?.position ?? '',
                                         size: 8,
                                         color: AppColors.black.withValues(
                                           alpha: 0.9,
@@ -156,7 +156,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                                       ),
                                       6.spaceY,
                                       CustomText(
-                                        title: comment?.comment ?? '',
+                                        title: comment.comment,
                                         size: 10,
                                       ),
                                     ],
@@ -170,7 +170,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
                     ),
                     4.spaceX,
                     CommentReplyWidget(
-                      comment: comment!,
+                      comment: comment,
                       isFocus: (p0) {
                         postController.setAutoFocus(p0);
                       },

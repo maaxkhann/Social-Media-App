@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:social_media/models/notifications_model.dart';
 import 'package:social_media/models/post_model.dart';
 import 'package:social_media/models/reply_model.dart';
@@ -152,5 +153,63 @@ class NotificationsController {
             return []; // fallback to empty list to avoid UI crashing
           }
         });
+  }
+
+  Map<String, DocumentSnapshot?> lastReplyDocs = {};
+  Map<String, bool> hasMoreReplies = {};
+  Map<String, RxBool> isReplyLoading = {};
+  Map<String, RxList<ReplyModel>> paginatedReplies = {};
+
+  void initReplyPagination(String commentId) {
+    lastReplyDocs[commentId] = null;
+    hasMoreReplies[commentId] = true;
+    isReplyLoading[commentId] = false.obs;
+    paginatedReplies[commentId] = <ReplyModel>[].obs;
+  }
+
+  Future<void> fetchRepliesPaginated(String commentId) async {
+    if (isReplyLoading[commentId]?.value == true ||
+        hasMoreReplies[commentId] != true) {
+      return;
+    }
+
+    isReplyLoading[commentId]?.value = true;
+
+    Query query = firestore
+        .collection('Comments')
+        .doc(commentId)
+        .collection('Replies')
+        // .orderBy('timeStamp', descending: false)
+        .limit(5);
+
+    if (lastReplyDocs[commentId] != null) {
+      query = query.startAfterDocument(lastReplyDocs[commentId]!);
+    }
+
+    final snapshot = await query.get();
+
+    if (snapshot.docs.isEmpty) {
+      hasMoreReplies[commentId] = false;
+      isReplyLoading[commentId]?.value = false;
+      return;
+    }
+
+    lastReplyDocs[commentId] = snapshot.docs.last;
+
+    final replies = await Future.wait(
+      snapshot.docs.map((doc) async {
+        final data = doc.data() as Map<String, dynamic>;
+        final userSnapshot =
+            await firestore.collection('Users').doc(data['replyBy']).get();
+
+        return ReplyModel.fromJson(
+          data,
+          user: UserModel.fromJson(userSnapshot.data()!),
+        );
+      }),
+    );
+
+    paginatedReplies[commentId]?.addAll(replies);
+    isReplyLoading[commentId]?.value = false;
   }
 }
