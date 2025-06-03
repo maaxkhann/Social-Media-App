@@ -10,6 +10,7 @@ import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/comments_model.dart';
 import 'package:social_media/shared/console.dart';
 import 'package:social_media/views/home/widgets/comment_reply_widget.dart';
+import 'package:social_media/views/home/widgets/comments_widget.dart';
 
 showCommentSheet(
   BuildContext context,
@@ -18,10 +19,21 @@ showCommentSheet(
 }) {
   final commentController = TextEditingController();
   final postController = Get.find<PostController>();
-  final profileController = Get.find<ProfileController>();
+
   final notificationsController = Get.find<NotificationsController>();
   final commentStream = postController.getComments(postId);
   bool autoFocus = false;
+  final scrollController = ScrollController();
+  final Map<String, GlobalKey> commentKeys = {};
+
+  scrollController.addListener(() {
+    if (scrollController.position.pixels >=
+        scrollController.position.maxScrollExtent - 300) {
+      postController.loadMoreComments(postId);
+    }
+  });
+  postController.loadInitialComments(postId);
+
   showModalBottomSheet(
     isScrollControlled: true,
     useSafeArea: true,
@@ -40,8 +52,8 @@ showCommentSheet(
           ),
           child: Stack(
             children: [
-              ListView(
-                // crossAxisAlignment: CrossAxisAlignment.start,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   12.spaceY,
                   CustomText(
@@ -50,14 +62,14 @@ showCommentSheet(
                     fontWeight: FontWeight.w700,
                   ),
                   19.spaceY,
-                  StreamBuilder<List<CommentsModel>>(
-                    stream: commentStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
+                  Expanded(
+                    child: Obx(() {
+                      final comments = postController.paginatedComments;
+                      final isLoading = postController.isCommentsLoading.value;
+                      if (isLoading) {
                         return const Center(child: CircularProgressIndicator());
                       }
-
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      if (comments.isEmpty) {
                         return const Center(
                           child: CustomText(
                             title: 'No comments yet.',
@@ -65,12 +77,6 @@ showCommentSheet(
                           ),
                         );
                       }
-
-                      final scrollController = ScrollController();
-                      final Map<String, GlobalKey> commentKeys = {};
-
-                      final comments = snapshot.data;
-
                       return StatefulBuilder(
                         builder: (context, setState) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -84,169 +90,14 @@ showCommentSheet(
                               );
                             }
                           });
-                          return ListView.builder(
-                            controller: scrollController,
-                            itemCount: comments?.length,
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              final comment = comments?[index];
-                              final key = GlobalKey();
-                              if (comment?.commentId != null) {
-                                commentKeys[comment!.commentId] = key;
-                              }
-
-                              return Container(
-                                key: key,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 12),
-                                      child: CircleAvatar(
-                                        radius: 24,
-                                        foregroundImage: NetworkImage(
-                                          comment?.user?.image ?? '',
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            width: double.infinity,
-                                            margin: EdgeInsets.only(
-                                              top: 8,
-                                              bottom: 3,
-                                              left: 9,
-                                              right: 25,
-                                            ),
-                                            padding: EdgeInsets.only(
-                                              left: 12,
-                                              right: 12,
-                                              top: 7,
-                                              bottom: 12,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.lightGrey,
-                                              borderRadius:
-                                                  BorderRadius.circular(2),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Flexible(
-                                                  child: Row(
-                                                    children: [
-                                                      8.spaceX,
-                                                      Flexible(
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Row(
-                                                              children: [
-                                                                CustomText(
-                                                                  title:
-                                                                      comment
-                                                                          ?.user
-                                                                          ?.name ??
-                                                                      '',
-                                                                  size: 10,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                ),
-                                                                5.spaceX,
-                                                                Obx(() {
-                                                                  final isFollowed =
-                                                                      profileController
-                                                                          .followStatusMap[comment
-                                                                              ?.commentBy]
-                                                                          ?.value ??
-                                                                      false;
-                                                                  return profileController
-                                                                              .auth
-                                                                              .currentUser
-                                                                              ?.uid ==
-                                                                          comment
-                                                                              ?.user
-                                                                              ?.userId
-                                                                      ? SizedBox.shrink()
-                                                                      : InkWell(
-                                                                        onTap:
-                                                                            () => profileController.follow(
-                                                                              !isFollowed,
-                                                                              comment!.commentBy,
-                                                                            ),
-                                                                        child: CustomText(
-                                                                          title:
-                                                                              isFollowed
-                                                                                  ? 'Followed'
-                                                                                  : 'Follow',
-                                                                          size:
-                                                                              8,
-                                                                          fontWeight:
-                                                                              FontWeight.w600,
-                                                                          color:
-                                                                              AppColors.blue,
-                                                                        ),
-                                                                      );
-                                                                }),
-                                                              ],
-                                                            ),
-                                                            4.spaceY,
-                                                            CustomText(
-                                                              title:
-                                                                  comment
-                                                                      ?.user
-                                                                      ?.position ??
-                                                                  '',
-                                                              size: 8,
-                                                              color: AppColors
-                                                                  .black
-                                                                  .withValues(
-                                                                    alpha: 0.9,
-                                                                  ),
-                                                            ),
-                                                            6.spaceY,
-                                                            CustomText(
-                                                              title:
-                                                                  comment
-                                                                      ?.comment ??
-                                                                  '',
-                                                              size: 10,
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          4.spaceX,
-                                          CommentReplyWidget(
-                                            comment: comment!,
-                                            isFocus: (p0) {
-                                              postController.setAutoFocus(p0);
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                          return CommentsWidget(
+                            scrollController: scrollController,
+                            comments: comments,
+                            commentKeys: commentKeys,
                           );
                         },
                       );
-                    },
+                    }),
                   ),
                   SizedBox(height: Get.height * 0.09),
                 ],

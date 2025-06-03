@@ -368,4 +368,78 @@ class PostController extends GetxController {
           }
         });
   }
+
+  DocumentSnapshot? lastCommentDoc;
+  bool hasMoreComments = true;
+  bool isLoadingComments = false;
+  RxBool isCommentsLoading = true.obs;
+  RxBool isMoreCommentsLoading = false.obs;
+
+  Future<List<CommentsModel>> fetchCommentsPaginated(String postId) async {
+    Query query = firestore
+        .collection('Comments')
+        .where('postId', isEqualTo: postId)
+        // .orderBy('timeStamp', descending: true)
+        .limit(20);
+
+    if (lastCommentDoc != null) {
+      query = query.startAfterDocument(lastCommentDoc!);
+    }
+
+    final snapshot = await query.get();
+    if (snapshot.docs.isEmpty) {
+      isLoadingComments = false;
+      hasMoreComments = false;
+      return [];
+    }
+    lastCommentDoc = snapshot.docs.last;
+
+    final comments = await Future.wait(
+      snapshot.docs.map((doc) async {
+        final data = doc.data() as Map<String, dynamic>;
+
+        getCommentLikes(doc['commentId']);
+
+        final userSnapshot =
+            await firestore.collection('Users').doc(data['commentBy']).get();
+        final repliesSnapshot =
+            await firestore
+                .collection('Comments')
+                .doc(doc['commentId'])
+                .collection('Replies')
+                .get();
+
+        for (final replyDoc in repliesSnapshot.docs) {
+          getCommentReplyLikes(doc['commentId'], replyDoc.id);
+        }
+
+        final user = UserModel.fromJson(userSnapshot.data()!);
+        return CommentsModel.fromJson(data, user: user);
+      }).toList(),
+    );
+
+    isLoadingComments = false;
+    return comments;
+  }
+
+  RxList<CommentsModel> paginatedComments = <CommentsModel>[].obs;
+
+  void loadInitialComments(String postId) async {
+    isCommentsLoading.value = true;
+    lastCommentDoc = null;
+    hasMoreComments = true;
+    paginatedComments.clear();
+    final newComments = await fetchCommentsPaginated(postId);
+    paginatedComments.addAll(newComments);
+    isCommentsLoading.value = false;
+  }
+
+  void loadMoreComments(String postId) async {
+    if (isMoreCommentsLoading.value || isLoadingComments || !hasMoreComments)
+      return;
+    isMoreCommentsLoading.value = true;
+    final newComments = await fetchCommentsPaginated(postId);
+    paginatedComments.addAll(newComments);
+    isMoreCommentsLoading.value = false;
+  }
 }

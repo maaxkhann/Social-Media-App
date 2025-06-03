@@ -54,13 +54,13 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                         InkWell(
                           onTap: () {
                             postController.likeComment(
-                              comment.commentId,
-                              comment.postId,
-                              !comment.isLiked,
+                              comment.commentId ?? '',
+                              comment.postId ?? '',
+                              !comment.isLiked!,
                             );
                           },
                           child: CustomText(
-                            title: comment.isLiked ? 'Unlike' : 'Like',
+                            title: comment.isLiked! ? 'Unlike' : 'Like',
                             size: 10,
                           ),
                         ),
@@ -72,7 +72,7 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                         ),
                         11.spaceX,
                         Icon(
-                          comment.isLiked
+                          comment.isLiked!
                               ? Icons.thumb_up
                               : Icons.thumb_up_outlined,
                           color: AppColors.blue,
@@ -112,7 +112,9 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
         // Replies
         if (showReplyInput)
           StreamBuilder(
-            stream: notificationsController.getRepliesStream(comment.commentId),
+            stream: notificationsController.getRepliesStream(
+              comment.commentId ?? '',
+            ),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return const SizedBox();
               final replies = snapshot.data!;
@@ -183,9 +185,9 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                             InkWell(
                               onTap: () {
                                 postController.likeCommentReply(
-                                  comment.commentId,
+                                  comment.commentId ?? '',
                                   reply.replyId,
-                                  comment.postId,
+                                  comment.postId ?? '',
                                   !reply.isLiked,
                                 );
                               },
