@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/models/post_model.dart';
+import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/views/home/widgets/comment_dialog.dart';
 import 'package:social_media/views/home/widgets/icons_widget.dart';
 
@@ -57,7 +58,11 @@ class _PostActionsState extends State<PostActions> {
           icon: Icons.comment,
         ),
         IconsWidget(title: 'Share', icon: Icons.upload),
-        IconsWidget(title: 'Message', icon: Icons.message),
+        IconsWidget(
+          title: 'Message',
+          icon: Icons.message,
+          onTap: () => Get.toNamed(AppRoutes.chatView),
+        ),
       ],
     );
   }

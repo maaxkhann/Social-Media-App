@@ -179,7 +179,7 @@ class NotificationsController {
         .collection('Comments')
         .doc(commentId)
         .collection('Replies')
-        // .orderBy('timeStamp', descending: false)
+        .orderBy('timestamp', descending: false)
         .limit(5);
 
     if (lastReplyDocs[commentId] != null) {

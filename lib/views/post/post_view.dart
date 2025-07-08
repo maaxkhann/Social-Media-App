@@ -71,7 +71,7 @@ class _PostViewState extends State<PostView> {
                           ],
                         ),
                       ),
-                      24.spaceY,
+                      12.spaceY,
                       if (filePath != null)
                         postType == 'image'
                             ? Image.file(

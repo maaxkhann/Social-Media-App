@@ -5,11 +5,7 @@ import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/notifications_controller.dart';
 import 'package:social_media/controllers/post_controller.dart';
-import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
-import 'package:social_media/models/comments_model.dart';
-import 'package:social_media/shared/console.dart';
-import 'package:social_media/views/home/widgets/comment_reply_widget.dart';
 import 'package:social_media/views/home/widgets/comments_widget.dart';
 
 showCommentSheet(
@@ -21,7 +17,7 @@ showCommentSheet(
   final postController = Get.find<PostController>();
 
   final notificationsController = Get.find<NotificationsController>();
-  final commentStream = postController.getComments(postId);
+  // final commentStream = postController.getComments(postId);
   bool autoFocus = false;
   final scrollController = ScrollController();
   final Map<String, GlobalKey> commentKeys = {};

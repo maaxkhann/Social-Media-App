@@ -4,7 +4,7 @@ import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
-import 'package:social_media/views/chat/widgets/chat_appbar.dart';
+import 'package:social_media/views/chat/widgets/message_appbar.dart';
 import 'package:social_media/views/chat/widgets/group_widget.dart';
 import 'package:social_media/views/chat/widgets/messages_widget.dart';
 import 'package:social_media/views/chat/widgets/stories_list.dart';
@@ -41,7 +41,7 @@ class _MessagesViewState extends State<MessagesView>
                 pinned: true,
                 expandedHeight: 115,
                 flexibleSpace: FlexibleSpaceBar(
-                  background: ChatAppBar(
+                  background: MessageAppBar(
                     tabController: tabController,
                     image: profileController.userModel.value?.image,
                   ),

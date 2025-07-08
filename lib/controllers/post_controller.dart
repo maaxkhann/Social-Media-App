@@ -10,6 +10,7 @@ import 'package:social_media/models/post_model.dart';
 import 'package:social_media/models/reply_model.dart';
 import 'package:social_media/models/user_model.dart';
 import 'package:social_media/shared/console.dart';
+import 'package:social_media/utilities/pops.dart';
 
 class PostController extends GetxController {
   final notificationsController = Get.put(NotificationsController());
@@ -25,7 +26,14 @@ class PostController extends GetxController {
   RxMap<String, int> commentsLikesCount = <String, int>{}.obs;
   RxMap<String, int> commentsReplyLikesCount = <String, int>{}.obs;
   RxBool autoFocus = false.obs;
+  RxBool isPostsLoading = false.obs;
   RxnString replyingToCommentId = RxnString();
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchInitialPosts();
+  }
 
   void setAutoFocus(bool val) {
     autoFocus.value = val;
@@ -41,6 +49,7 @@ class PostController extends GetxController {
     console('text before upload: $text');
 
     try {
+      Pops.startLoading();
       String? downloadUrl;
 
       // Upload file only if filePath is not null or empty
@@ -84,43 +93,112 @@ class PostController extends GetxController {
         'userId': uid,
         'timestamp': FieldValue.serverTimestamp(),
       });
+      Pops.stopLoading();
 
       console('Post created: $postId');
       Get.snackbar('Success', 'Post uploaded successfully');
+      fetchInitialPosts();
       //  Get.off(() => CustomBottomNavBar());
     } catch (e) {
+      Pops.stopLoading();
       console('Error creating post: $e');
       Get.snackbar('Error', 'Failed to create post');
     }
   }
 
-  Stream<List<PostModel>> getPostsStream() {
-    return firestore
-        .collection('Posts')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .asyncMap((snapshot) async {
-          List<PostModel> posts = [];
+  final RxBool isLoadingMorePosts = false.obs;
+  DocumentSnapshot? lastDoc;
+  final int limit = 8;
+  bool hasMore = true;
 
-          for (var doc in snapshot.docs) {
-            final userId = doc['userId'];
-            final userDoc =
-                await firestore.collection('Users').doc(userId).get();
-            final userModel = UserModel.fromJson(
-              userDoc.data() as Map<String, dynamic>,
-            );
+  Future<void> fetchInitialPosts() async {
+    isPostsLoading.value = true;
+    final query =
+        await firestore
+            .collection('Posts')
+            .orderBy('timestamp', descending: true)
+            .limit(limit)
+            .get();
 
-            final post = PostModel.fromJson(doc.data(), user: userModel);
-
-            posts.add(post);
-            getLikes(post.postId);
-            getCommentsLength(post.postId);
-            getComments(post.postId);
-          }
-
-          return posts;
-        });
+    final newPosts = await _mapQueryToPosts(query);
+    posts.assignAll(newPosts);
+    lastDoc = query.docs.isNotEmpty ? query.docs.last : null;
+    hasMore = query.docs.length == limit;
+    isPostsLoading.value = false;
   }
+
+  Future<void> fetchMorePosts() async {
+    if (isLoadingMorePosts.value || !hasMore) return;
+
+    isLoadingMorePosts.value = true;
+
+    final query =
+        await firestore
+            .collection('Posts')
+            .orderBy('timestamp', descending: true)
+            .startAfterDocument(lastDoc!)
+            .limit(limit)
+            .get();
+
+    final newPosts = await _mapQueryToPosts(query);
+    posts.addAll(newPosts);
+    lastDoc = query.docs.isNotEmpty ? query.docs.last : lastDoc;
+    hasMore = query.docs.length == limit;
+
+    isLoadingMorePosts.value = false;
+  }
+
+  Future<List<PostModel>> _mapQueryToPosts(QuerySnapshot query) async {
+    List<PostModel> posts = [];
+
+    for (var doc in query.docs) {
+      final userId = doc['userId'];
+      final userDoc = await firestore.collection('Users').doc(userId).get();
+      final userModel = UserModel.fromJson(
+        userDoc.data() as Map<String, dynamic>,
+      );
+      final post = PostModel.fromJson(
+        doc.data() as Map<String, dynamic>,
+        user: userModel,
+      );
+
+      posts.add(post);
+      getLikes(post.postId);
+      getCommentsLength(post.postId);
+      fetchCommentsPaginated(post.postId);
+    }
+
+    return posts;
+  }
+
+  // Stream<List<PostModel>> getPostsStream() {
+  //   return firestore
+  //       .collection('Posts')
+  //       .orderBy('timestamp', descending: true)
+  //       .snapshots()
+  //       .asyncMap((snapshot) async {
+  //         List<PostModel> posts = [];
+
+  //         for (var doc in snapshot.docs) {
+  //           final userId = doc['userId'];
+  //           final userDoc =
+  //               await firestore.collection('Users').doc(userId).get();
+  //           final userModel = UserModel.fromJson(
+  //             userDoc.data() as Map<String, dynamic>,
+  //           );
+
+  //           final post = PostModel.fromJson(doc.data(), user: userModel);
+
+  //           posts.add(post);
+  //           getLikes(post.postId);
+  //           getCommentsLength(post.postId);
+  //           //  getComments(post.postId);
+  //           fetchCommentsPaginated(post.postId);
+  //         }
+
+  //         return posts;
+  //       });
+  // }
 
   Stream<PostModel> getPost(String postId) {
     return firestore
@@ -315,60 +393,60 @@ class PostController extends GetxController {
     commentsCounts[postId] = commentsSnapshot.docs.length;
   }
 
-  Stream<List<CommentsModel>> getComments(String postId) {
-    return firestore
-        .collection('Comments')
-        .where('postId', isEqualTo: postId)
-        .snapshots()
-        .asyncMap((snapshot) async {
-          try {
-            console('Docs received: ${snapshot.docs.length}');
+  // Stream<List<CommentsModel>> getComments(String postId) {
+  //   return firestore
+  //       .collection('Comments')
+  //       .where('postId', isEqualTo: postId)
+  //       .snapshots()
+  //       .asyncMap((snapshot) async {
+  //         try {
+  //           console('Docs received: ${snapshot.docs.length}');
 
-            final comments = await Future.wait(
-              snapshot.docs.map((doc) async {
-                final data = doc.data();
-                console('Comment: ${data['comment']}');
-                getCommentLikes(doc['commentId']);
+  //           final comments = await Future.wait(
+  //             snapshot.docs.map((doc) async {
+  //               final data = doc.data();
+  //               console('Comment: ${data['comment']}');
+  //               getCommentLikes(doc['commentId']);
 
-                final userSnapshot =
-                    await firestore
-                        .collection('Users')
-                        .doc(data['commentBy'])
-                        .get();
+  //               final userSnapshot =
+  //                   await firestore
+  //                       .collection('Users')
+  //                       .doc(data['commentBy'])
+  //                       .get();
 
-                if (!userSnapshot.exists) {
-                  console(
-                    '⚠️ User not found for comment: ${data['commentBy']}',
-                  );
-                }
-                // get replies
-                final repliesSnapshot =
-                    await firestore
-                        .collection('Comments')
-                        .doc(doc['commentId'])
-                        .collection('Replies')
-                        .get();
+  //               if (!userSnapshot.exists) {
+  //                 console(
+  //                   '⚠️ User not found for comment: ${data['commentBy']}',
+  //                 );
+  //               }
+  //               // get replies
+  //               final repliesSnapshot =
+  //                   await firestore
+  //                       .collection('Comments')
+  //                       .doc(doc['commentId'])
+  //                       .collection('Replies')
+  //                       .get();
 
-                for (final replyDoc in repliesSnapshot.docs) {
-                  final replyId = replyDoc.id;
-                  getCommentReplyLikes(
-                    doc['commentId'],
-                    replyId,
-                  ); // reply likes
-                }
-                final user = UserModel.fromJson(userSnapshot.data()!);
-                return CommentsModel.fromJson(data, user: user);
-              }),
-            );
+  //               for (final replyDoc in repliesSnapshot.docs) {
+  //                 final replyId = replyDoc.id;
+  //                 getCommentReplyLikes(
+  //                   doc['commentId'],
+  //                   replyId,
+  //                 ); // reply likes
+  //               }
+  //               final user = UserModel.fromJson(userSnapshot.data()!);
+  //               return CommentsModel.fromJson(data, user: user);
+  //             }),
+  //           );
 
-            return comments;
-          } catch (e, stack) {
-            console('⚠️ Error in getComments: $e\n$stack');
-            console('⚠️ Error in getComments: $stack');
-            return []; // fallback to empty list to avoid UI crashing
-          }
-        });
-  }
+  //           return comments;
+  //         } catch (e, stack) {
+  //           console('⚠️ Error in getComments: $e\n$stack');
+  //           console('⚠️ Error in getComments: $stack');
+  //           return []; // fallback to empty list to avoid UI crashing
+  //         }
+  //       });
+  // }
 
   DocumentSnapshot? lastCommentDoc;
   bool hasMoreComments = true;

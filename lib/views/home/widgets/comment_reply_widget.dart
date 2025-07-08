@@ -249,7 +249,7 @@ class _CommentWithRepliesWidgetState extends State<CommentReplyWidget> {
                             ? const CircularProgressIndicator()
                             : !notificationsController.hasMoreReplies[comment
                                 .commentId]!
-                            ? SizedBox()
+                            ? SizedBox.shrink()
                             : TextButton(
                               onPressed:
                                   () => notificationsController

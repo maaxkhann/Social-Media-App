@@ -59,7 +59,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(
               icon: Icon(Icons.post_add_sharp),
-              label: 'Posts',
+              label: 'Upload',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.notifications),
