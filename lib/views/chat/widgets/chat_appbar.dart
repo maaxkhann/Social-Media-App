@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
 import 'package:social_media/constants/app_colors.dart' show AppColors;
 import 'package:social_media/constants/app_text.dart';
+import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 
-class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ChatAppBar({super.key});
+class ChatAppBar extends StatefulWidget implements PreferredSizeWidget {
+  final String? otherUserId;
+  const ChatAppBar({super.key, this.otherUserId});
+
+  @override
+  State<ChatAppBar> createState() => _ChatAppBarState();
+
+  @override
+  Size get preferredSize => Size.fromHeight(79);
+}
+
+class _ChatAppBarState extends State<ChatAppBar> {
+  final profileController = Get.put(ProfileController());
+
+  @override
+  void initState() {
+    profileController.getUserData(otherId: widget.otherUserId);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +60,13 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             10.spaceX,
             Stack(
               children: [
-                CircleAvatar(radius: 25),
+                CircleAvatar(
+                  radius: 25,
+                  foregroundImage: NetworkImage(
+                    profileController.userModel.value?.image ??
+                        'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740',
+                  ),
+                ),
                 Positioned(
                   right: 0,
                   bottom: 4,
@@ -61,7 +84,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CustomText(
-                    title: 'Rubab Shah',
+                    title: profileController.userModel.value?.name ?? '',
                     size: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -95,7 +118,4 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
-
-  @override
-  Size get preferredSize => Size.fromHeight(79);
 }

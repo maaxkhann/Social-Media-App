@@ -20,8 +20,8 @@ class ProfileController extends GetxController {
     getUserData();
   }
 
-  void getUserData() async {
-    final userId = auth.currentUser?.uid;
+  void getUserData({String? otherId}) async {
+    final userId = otherId ?? auth.currentUser?.uid;
     if (userId != null) {
       final docRef = await firestore.collection('Users').doc(userId).get();
       userModel.value = UserModel.fromJson(

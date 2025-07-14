@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:social_media/components/custom_textfield.dart';
 import 'package:social_media/constants/app_colors.dart';
+import 'package:social_media/controllers/chat_controller.dart';
 
 class ChatBottomBar extends StatelessWidget {
-  const ChatBottomBar({super.key});
+  final String otherUserId;
+  const ChatBottomBar({super.key, required this.otherUserId});
+  static final chatCont = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final chatController = Get.put(ChatController());
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -14,10 +19,19 @@ class ChatBottomBar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             CustomTextField(
+              controller: chatCont,
               isBorder: false,
               hintText: 'Message...',
               suffixIcon: IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  chatController
+                      .sendMessage(
+                        currentUserId: chatController.auth.currentUser!.uid,
+                        otherUserId: otherUserId,
+                        messageText: chatCont.text,
+                      )
+                      .then((val) => chatCont.clear());
+                },
                 icon: Icon(Icons.send, color: AppColors.yellow),
               ),
             ),

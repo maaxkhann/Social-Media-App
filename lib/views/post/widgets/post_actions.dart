@@ -61,7 +61,11 @@ class _PostActionsState extends State<PostActions> {
         IconsWidget(
           title: 'Message',
           icon: Icons.message,
-          onTap: () => Get.toNamed(AppRoutes.chatView),
+          onTap:
+              () => Get.toNamed(
+                AppRoutes.chatView,
+                arguments: [livePost?.userId],
+              ),
         ),
       ],
     );

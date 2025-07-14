@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:social_media/controllers/notifications_controller.dart';
 import 'package:social_media/models/comments_model.dart';
 import 'package:social_media/models/post_model.dart';
-import 'package:social_media/models/reply_model.dart';
 import 'package:social_media/models/user_model.dart';
 import 'package:social_media/shared/console.dart';
 import 'package:social_media/utilities/pops.dart';
