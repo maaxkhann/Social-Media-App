@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:social_media/models/chat_user_model.dart';
+import 'package:social_media/models/user_model.dart';
 
 const String usersCollec = "users";
 const String chatUsersCollec = "chatUsers";
@@ -98,16 +100,31 @@ class ChatController extends GetxController {
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   }
 
-  Stream<List<Map<String, dynamic>>> getUserChats(String uid) {
-    final getUserChats = firestore
+  Stream<List<ChatUserModel>> getUserChats(String uid) {
+    return firestore
         .collection('chatUsers')
         .doc(uid)
         .collection('chatUsers')
         .orderBy('lastMessageTimestamp', descending: true)
         .snapshots()
-        .map((snapshot) {
-          return snapshot.docs.map((doc) => doc.data()).toList();
+        .asyncMap((snapshot) async {
+          final chatList = await Future.wait(
+            snapshot.docs.map((doc) async {
+              final data = doc.data();
+              final otherUserId = data['otherUserId'];
+
+              // Fetch user document
+              final userDoc =
+                  await firestore.collection('Users').doc(otherUserId).get();
+              final userData = userDoc.data() ?? {};
+
+              final userModel = UserModel.fromJson(userData);
+
+              return ChatUserModel.fromJson(data, user: userModel);
+            }),
+          );
+
+          return chatList;
         });
-    return getUserChats;
   }
 }
