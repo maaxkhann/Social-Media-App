@@ -24,55 +24,90 @@ class ChatController extends GetxController {
 
   Future<void> sendMessage({
     required String currentUserId,
-    required String otherUserId,
+    required String? otherUserId, // optional for group
     required String messageText,
+    String? chatId, // required for group
+    bool isGroup = false,
   }) async {
-    String chatId = channelId(currentUserId, otherUserId);
+    final now = FieldValue.serverTimestamp();
+    if (!isGroup) {
+      chatId = channelId(currentUserId, otherUserId!);
+    }
 
-    // Add the message to the messages subcollection
-    await FirebaseFirestore.instance
-        .collection(chatsCollec)
-        .doc(chatId)
-        .collection('messages')
-        .add({
-          'senderId': currentUserId,
-          'text': messageText,
-          'timestamp': FieldValue.serverTimestamp(),
-          'read': false,
-        });
-    chatUsersRef
-        .doc(currentUserId)
-        .collection(chatUsersCollec)
-        .doc(chatId)
-        .set({
-          'lastMessage': messageText,
-          'lastMessageTimestamp': FieldValue.serverTimestamp(),
-          'otherUserId': otherUserId,
-        });
+    final chatRef = FirebaseFirestore.instance.collection('chats').doc(chatId);
 
-    // Update the userChats subcollection for the other user
-    await chatUsersRef
-        .doc(otherUserId)
-        .collection(chatUsersCollec)
-        .doc(chatId)
-        .set({
-          'lastMessage': messageText,
-          'lastMessageTimestamp': FieldValue.serverTimestamp(),
-          'otherUserId': currentUserId,
-        });
+    // Send message
+    await chatRef.collection('messages').add({
+      'senderId': currentUserId,
+      'text': messageText,
+      'timestamp': now,
+      'read': false,
+    });
+
+    // Update last message for participants
+    if (isGroup) {
+      final chatDoc = await chatRef.get();
+      final participants = List<String>.from(
+        chatDoc.data()?['participants'] ?? [],
+      );
+
+      for (String uid in participants) {
+        await chatUsersRef
+            .doc(uid)
+            .collection(chatUsersCollec)
+            .doc(chatId)
+            .set({
+              'lastMessage': messageText,
+              'lastMessageTimestamp': now,
+              'chatId': chatId,
+              'isGroup': true,
+            });
+      }
+    } else {
+      await chatUsersRef
+          .doc(currentUserId)
+          .collection(chatUsersCollec)
+          .doc(chatId)
+          .set({
+            'lastMessage': messageText,
+            'lastMessageTimestamp': now,
+            'otherUserId': otherUserId,
+            'isGroup': false,
+          });
+
+      await chatUsersRef
+          .doc(otherUserId!)
+          .collection(chatUsersCollec)
+          .doc(chatId)
+          .set({
+            'lastMessage': messageText,
+            'lastMessageTimestamp': now,
+            'otherUserId': currentUserId,
+            'isGroup': false,
+          });
+    }
   }
 
-  Stream<List<Map<String, dynamic>>> getMessages(
-    String currentUserId,
-    String otherUserId,
-  ) async* {
-    String chatId = channelId(currentUserId, otherUserId);
-    yield* FirebaseFirestore.instance
+  Stream<List<Map<String, dynamic>>> getMessages({required String chatId}) {
+    return FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+  }
+
+  Stream<List<Map<String, dynamic>>> getUserChats(String uid) {
+    final getUserChats = firestore
+        .collection('chatUsers')
+        .doc(uid)
+        .collection('chatUsers')
+        .orderBy('lastMessageTimestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) => doc.data()).toList();
+        });
+    return getUserChats;
   }
 }

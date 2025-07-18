@@ -35,39 +35,51 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        body: screens.elementAt(selectedIndex),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: selectedIndex,
-          onTap: onItemTapped,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          selectedItemColor: AppColors.blue,
-          unselectedItemColor: AppColors.black.withValues(alpha: 0.5),
+      child: PopScope(
+        onPopInvoked: (didPop) {
+          if (!didPop && selectedIndex != 0) {
+            setState(() {
+              selectedIndex = 0;
+            });
+          }
+        },
+        child: Scaffold(
+          body: screens.elementAt(selectedIndex),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: selectedIndex,
+            onTap: onItemTapped,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            selectedItemColor: AppColors.blue,
+            unselectedItemColor: AppColors.black.withValues(alpha: 0.5),
 
-          selectedLabelStyle: TextStyle(
-            fontSize: 10,
-            color: AppColors.blue,
-            fontWeight: FontWeight.w700,
-          ),
-          unselectedLabelStyle: TextStyle(
-            fontSize: 10,
-            color: AppColors.black.withValues(alpha: 0.5),
-            fontWeight: FontWeight.w700,
-          ),
-          items: <BottomNavigationBarItem>[
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.post_add_sharp),
-              label: 'Upload',
+            selectedLabelStyle: TextStyle(
+              fontSize: 10,
+              color: AppColors.blue,
+              fontWeight: FontWeight.w700,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.notifications),
-              label: 'Notifications',
+            unselectedLabelStyle: TextStyle(
+              fontSize: 10,
+              color: AppColors.black.withValues(alpha: 0.5),
+              fontWeight: FontWeight.w700,
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
+            items: <BottomNavigationBarItem>[
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.post_add_sharp),
+                label: 'Upload',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.notifications),
+                label: 'Notifications',
+              ),
+              BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ],
+          ),
         ),
       ),
     );

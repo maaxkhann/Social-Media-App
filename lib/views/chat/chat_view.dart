@@ -4,12 +4,29 @@ import 'package:get/get.dart';
 import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/chat_controller.dart';
+import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/views/chat/widgets/chat_appbar.dart';
 import 'package:social_media/views/chat/widgets/chat_bottombar.dart';
 
-class ChatView extends StatelessWidget {
+class ChatView extends StatefulWidget {
   const ChatView({super.key});
+
+  @override
+  State<ChatView> createState() => _ChatViewState();
+}
+
+class _ChatViewState extends State<ChatView> {
+  final chatController = Get.put(ChatController());
+  String chatId = '';
+  @override
+  void initState() {
+    chatId = chatController.channelId(
+      chatController.auth.currentUser!.uid,
+      Get.arguments[0],
+    );
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +39,7 @@ class ChatView extends StatelessWidget {
           children: [
             Expanded(
               child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: chatController.getMessages(
-                  chatController.auth.currentUser!.uid,
-                  Get.arguments[0],
-                ),
+                stream: chatController.getMessages(chatId: chatId),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return Center(child: CircularProgressIndicator());

@@ -88,65 +88,63 @@ class _PostViewState extends State<PostView> {
                               fit: BoxFit.fill,
                             )
                             : Center(child: Icon(Icons.video_file, size: 40)),
-                      const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              onPressed: () async {
-                                MediaPickerSheet.show(
-                                  context: context,
-                                  onPicked: (path, type) async {
-                                    String? thumb;
-                                    if (type == 'video') {
-                                      thumb = await Thumbnail.ins
-                                          .generateThumbnail(path);
-                                    }
-                                    setState(() {
-                                      filePath = path;
-                                      postType = type;
-                                      thumbnailPath = thumb;
-                                    });
-                                  },
-                                );
-                              },
-                              icon: Icon(
-                                Icons.image,
-                                color: AppColors.black.withValues(alpha: 0.5),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                if (postCont.text.isEmpty && filePath == null) {
-                                  Get.snackbar(
-                                    'Error',
-                                    'Please add a post content or media.',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
-                                  return;
-                                }
-                                postController.createPost(
-                                  filePath ?? '',
-                                  postCont.text,
-                                  postType ?? '',
-                                );
-                              },
-                              icon: Icon(
-                                Icons.send,
-                                color: AppColors.black.withValues(alpha: 0.5),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),
               ),
             );
           },
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: () async {
+                MediaPickerSheet.show(
+                  context: context,
+                  onPicked: (path, type) async {
+                    String? thumb;
+                    if (type == 'video') {
+                      thumb = await Thumbnail.ins.generateThumbnail(path);
+                    }
+                    setState(() {
+                      filePath = path;
+                      postType = type;
+                      thumbnailPath = thumb;
+                    });
+                  },
+                );
+              },
+              icon: Icon(
+                Icons.image,
+                color: AppColors.black.withValues(alpha: 0.5),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                if (postCont.text.isEmpty && filePath == null) {
+                  Get.snackbar(
+                    'Error',
+                    'Please add a post content or media.',
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                  return;
+                }
+                postController.createPost(
+                  filePath ?? '',
+                  postCont.text,
+                  postType ?? '',
+                );
+              },
+              icon: Icon(
+                Icons.send,
+                color: AppColors.black.withValues(alpha: 0.5),
+              ),
+            ),
+          ],
         ),
       ),
     );

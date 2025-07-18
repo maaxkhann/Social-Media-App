@@ -90,6 +90,8 @@ class NotificationsView extends StatelessWidget {
                               ),
                             ),
                             title: Text.rich(
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               TextSpan(
                                 children: [
                                   TextSpan(
