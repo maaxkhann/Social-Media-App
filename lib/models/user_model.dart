@@ -5,6 +5,8 @@ class UserModel {
   final String phone;
   final String position;
   final String image;
+  final String fcmToken;
+  final bool isOnline;
 
   UserModel({
     required this.userId,
@@ -13,6 +15,8 @@ class UserModel {
     required this.phone,
     required this.position,
     required this.image,
+    required this.fcmToken,
+    required this.isOnline,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> doc) {
@@ -25,6 +29,8 @@ class UserModel {
       phone: data['phone'],
       position: data['position'],
       image: data['image'],
+      fcmToken: data['fcmToken'],
+      isOnline: data['isOnline'],
     );
   }
 }

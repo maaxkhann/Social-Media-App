@@ -6,6 +6,7 @@ import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/chat_controller.dart';
 import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
+import 'package:social_media/models/chat_model.dart';
 import 'package:social_media/views/chat/widgets/chat_appbar.dart';
 import 'package:social_media/views/chat/widgets/chat_bottombar.dart';
 
@@ -38,7 +39,7 @@ class _ChatViewState extends State<ChatView> {
         body: Column(
           children: [
             Expanded(
-              child: StreamBuilder<List<Map<String, dynamic>>>(
+              child: StreamBuilder<List<ChatModel>>(
                 stream: chatController.getMessages(chatId: chatId),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
@@ -57,11 +58,10 @@ class _ChatViewState extends State<ChatView> {
                     itemBuilder: (context, index) {
                       final message = messages[index];
                       final isMine =
-                          message['senderId'] ==
+                          message.senderId ==
                           chatController.auth.currentUser!.uid;
-                      final text = message['text'] ?? '';
-                      final time =
-                          (message['timestamp'] as Timestamp?)?.toDate();
+                      final text = message.text;
+                      final time = (message.timestamp as Timestamp?)?.toDate();
                       final formattedTime =
                           time != null
                               ? TimeOfDay.fromDateTime(time).format(context)

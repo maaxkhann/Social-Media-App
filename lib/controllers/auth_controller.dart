@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,6 +38,7 @@ class AuthController extends GetxController {
         confirmPassword,
       );
       if (isValidate) {
+        final token = await FirebaseMessaging.instance.getToken();
         Pops.startLoading();
         final file = File(image);
         final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -60,7 +62,9 @@ class AuthController extends GetxController {
             'position': position,
             'phone': phoneNumber,
             'isFollowed': false,
+            'isOnline': false,
             'userId': uId,
+            'deviceToken': token,
           });
           Pops.stopLoading();
 

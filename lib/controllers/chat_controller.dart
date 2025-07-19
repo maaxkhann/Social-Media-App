@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:social_media/models/chat_model.dart';
 import 'package:social_media/models/chat_user_model.dart';
 import 'package:social_media/models/user_model.dart';
 
@@ -90,14 +91,19 @@ class ChatController extends GetxController {
     }
   }
 
-  Stream<List<Map<String, dynamic>>> getMessages({required String chatId}) {
+  Stream<List<ChatModel>> getMessages({required String chatId}) {
     return FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs
+                  .map((doc) => ChatModel.fromMap(doc.data()))
+                  .toList(),
+        );
   }
 
   Stream<List<ChatUserModel>> getUserChats(String uid) {
