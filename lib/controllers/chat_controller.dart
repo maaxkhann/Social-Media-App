@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_media/models/chat_model.dart';
 import 'package:social_media/models/chat_user_model.dart';
 import 'package:social_media/models/user_model.dart';
+import 'package:social_media/services/notification_service.dart';
 
 const String usersCollec = "users";
 const String chatUsersCollec = "chatUsers";
@@ -87,6 +89,15 @@ class ChatController extends GetxController {
             'lastMessageTimestamp': now,
             'otherUserId': currentUserId,
             'isGroup': false,
+          })
+          .then((val) async {
+            final userData =
+                await firestore.collection('Users').doc(otherUserId).get();
+            NotificationServices().sendFCMNotification(
+              token: userData.data()?['fcmToken'],
+              title: 'Flutter',
+              body: messageText,
+            );
           });
     }
   }

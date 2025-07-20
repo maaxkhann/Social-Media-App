@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:social_media/constants/app_colors.dart';
+import 'package:social_media/services/server_key.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationServices {
@@ -204,35 +205,28 @@ class NotificationServices {
     required String title,
     required String body,
   }) async {
-    const String serverKey =
-        'YOUR_SERVER_KEY_HERE'; // Get it from Firebase Console > Project Settings > Cloud Messaging
+    final fcm = GetServerKey();
+    final result = await fcm.serverToken();
 
-    final data = {
-      "to": token,
-      "notification": {"title": title, "body": body, "sound": "default"},
-      "data": {
-        "click_action": "FLUTTER_NOTIFICATION_CLICK",
-        "id": "1",
-        "status": "done",
-      },
-    };
-
-    final headers = {
-      "Content-Type": "application/json",
-      "Authorization": "key=$serverKey",
-    };
-
-    final response = await http.post(
-      Uri.parse("https://fcm.googleapis.com/fcm/send"),
-      headers: headers,
-      body: jsonEncode(data),
+    final url = Uri.parse(
+      'https://fcm.googleapis.com/v1/projects/${result['projectId']}/messages:send',
     );
 
-    if (response.statusCode == 200) {
-      print("Notification sent successfully");
-    } else {
-      print("Failed to send notification: ${response.body}");
-    }
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer ${result['accessToken']}',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        "message": {
+          "token": token,
+          "notification": {"title": title, "body": body},
+        },
+      }),
+    );
+
+    print("Response: ${response.statusCode} => ${response.body}");
   }
 
   // Future scheduleNotification({
