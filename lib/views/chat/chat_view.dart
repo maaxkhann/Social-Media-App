@@ -47,6 +47,23 @@ class _ChatViewState extends State<ChatView> {
                   }
 
                   final messages = snapshot.data!;
+                  // Mark unread messages as read if they're not sent by me
+                  final unread =
+                      messages
+                          .where(
+                            (msg) =>
+                                !msg.read &&
+                                msg.senderId !=
+                                    chatController.auth.currentUser!.uid,
+                          )
+                          .toList();
+
+                  if (unread.isNotEmpty) {
+                    chatController.markMessagesAsRead(
+                      chatId,
+                      chatController.auth.currentUser!.uid,
+                    );
+                  }
                   return ListView.separated(
                     reverse: true,
                     padding: const EdgeInsets.symmetric(
@@ -60,64 +77,71 @@ class _ChatViewState extends State<ChatView> {
                       final isMine =
                           message.senderId ==
                           chatController.auth.currentUser!.uid;
-                      final text = message.text;
+
                       final time = (message.timestamp as Timestamp?)?.toDate();
                       final formattedTime =
                           time != null
                               ? TimeOfDay.fromDateTime(time).format(context)
                               : '';
 
-                      return Row(
-                        children: [
-                          // isMine
-                          //     ? const SizedBox.shrink()
-                          //     : const CircleAvatar(radius: 18),
-                          //  13.spaceX,
-                          Expanded(
-                            child: Align(
-                              alignment:
-                                  isMine
-                                      ? Alignment.centerRight
-                                      : Alignment.centerLeft,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color:
-                                      isMine
-                                          ? AppColors.blue
-                                          : AppColors.lightShadeGrey,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CustomText(
-                                      title: text,
-                                      size: 11,
-                                      color:
-                                          isMine
-                                              ? AppColors.white
-                                              : AppColors.black.withAlpha(200),
-                                    ),
-                                    2.spaceY,
-                                    CustomText(
-                                      title: formattedTime,
-                                      size: 10,
-                                      color:
-                                          isMine
-                                              ? AppColors.white
-                                              : AppColors.black.withAlpha(200),
-                                    ),
-                                  ],
-                                ),
+                      return Align(
+                        alignment:
+                            isMine
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color:
+                                    isMine
+                                        ? AppColors.blue
+                                        : AppColors.lightShadeGrey,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CustomText(
+                                    title: message.text,
+                                    size: 11,
+                                    color:
+                                        isMine
+                                            ? AppColors.white
+                                            : AppColors.black.withAlpha(200),
+                                  ),
+                                  2.spaceY,
+                                  CustomText(
+                                    title: formattedTime,
+                                    size: 10,
+                                    color:
+                                        isMine
+                                            ? AppColors.white
+                                            : AppColors.black.withAlpha(200),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        ],
+                            if (isMine)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 2),
+                                child: Icon(
+                                  Icons.check,
+                                  size: 12,
+                                  color:
+                                      message.read
+                                          ? AppColors.blue
+                                          : AppColors.black,
+                                ),
+                              ),
+                          ],
+                        ),
                       );
                     },
                   );

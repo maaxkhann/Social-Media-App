@@ -6,6 +6,8 @@ class ChatUserModel {
   final String lastMessage;
   final DateTime? lastMessageTimestamp;
   final bool isGroup;
+  final int unreadCount;
+
   final UserModel? user;
 
   ChatUserModel({
@@ -13,6 +15,8 @@ class ChatUserModel {
     required this.lastMessage,
     required this.lastMessageTimestamp,
     required this.isGroup,
+    required this.unreadCount,
+
     this.user,
   });
 
@@ -24,8 +28,20 @@ class ChatUserModel {
           json['lastMessageTimestamp'] != null
               ? (json['lastMessageTimestamp'] as Timestamp).toDate()
               : null,
+      unreadCount: 0, // default
       isGroup: json['isGroup'] ?? false,
       user: user,
+    );
+  }
+
+  ChatUserModel copyWith({int? unreadCount}) {
+    return ChatUserModel(
+      otherUserId: otherUserId,
+      lastMessage: lastMessage,
+      lastMessageTimestamp: lastMessageTimestamp,
+      unreadCount: unreadCount ?? this.unreadCount,
+      user: user,
+      isGroup: isGroup,
     );
   }
 }

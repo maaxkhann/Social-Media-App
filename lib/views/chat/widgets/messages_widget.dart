@@ -91,15 +91,16 @@ class _MessagesWidgetState extends State<MessagesWidget> {
                             fontWeight: FontWeight.w700,
                           ),
                           5.spaceY,
-                          CircleAvatar(
-                            radius: 10,
-                            backgroundColor: AppColors.yellow,
-                            child: CustomText(
-                              title: '1',
-                              size: 12,
-                              color: AppColors.white,
+                          if (chatUser.unreadCount > 0)
+                            CircleAvatar(
+                              radius: 10,
+                              backgroundColor: AppColors.yellow,
+                              child: CustomText(
+                                title: chatUser.unreadCount.toString(),
+                                size: 12,
+                                color: AppColors.white,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ],

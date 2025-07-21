@@ -129,6 +129,18 @@ class ChatController extends GetxController {
             snapshot.docs.map((doc) async {
               final data = doc.data();
               final otherUserId = data['otherUserId'];
+              final chatId = channelId(uid, otherUserId);
+
+              final unreadSnapshot =
+                  await firestore
+                      .collection('chats')
+                      .doc(chatId)
+                      .collection('messages')
+                      .where('read', isEqualTo: false)
+                      .where('senderId', isEqualTo: otherUserId)
+                      .get();
+
+              final unreadCount = unreadSnapshot.docs.length;
 
               // Fetch user document
               final userDoc =
@@ -137,11 +149,32 @@ class ChatController extends GetxController {
 
               final userModel = UserModel.fromJson(userData);
 
-              return ChatUserModel.fromJson(data, user: userModel);
+              return ChatUserModel.fromJson(
+                data,
+                user: userModel,
+              ).copyWith(unreadCount: unreadCount);
             }),
           );
 
           return chatList;
         });
+  }
+
+  Future<void> markMessagesAsRead(String chatId, String currentUserId) async {
+    final query =
+        await FirebaseFirestore.instance
+            .collection('chats')
+            .doc(chatId)
+            .collection('messages')
+            .where('read', isEqualTo: false)
+            .get();
+
+    final docsToUpdate = query.docs.where(
+      (doc) => doc['senderId'] != currentUserId,
+    );
+
+    for (var doc in docsToUpdate) {
+      doc.reference.update({'read': true});
+    }
   }
 }
