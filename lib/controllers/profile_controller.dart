@@ -13,6 +13,7 @@ class ProfileController extends GetxController {
   var followStatusMap = <String, RxBool>{}.obs;
   RxInt followersCount = 0.obs;
   RxInt followingCount = 0.obs;
+  RxList<UserModel> allUsers = <UserModel>[].obs;
 
   @override
   void onInit() {
@@ -66,7 +67,7 @@ class ProfileController extends GetxController {
     final docId = '${auth.currentUser?.uid}_$followingUserId';
     final docRef = FirebaseFirestore.instance.collection('Follows').doc(docId);
     final doc = await docRef.get();
-    console('isFollow after ${doc['isFollowed']}');
+    //  console('isFollow after ${doc['isFollowed']}');
 
     if (doc.exists && doc['isFollowed'] == true
     // &&
@@ -101,5 +102,18 @@ class ProfileController extends GetxController {
     } catch (e) {
       console('Error fetching follow data: $e');
     }
+  }
+
+  Future<void> fetchAllOtherUsers() async {
+    final currentUserId = auth.currentUser?.uid;
+    if (currentUserId == null) return;
+
+    final snapshot =
+        await firestore
+            .collection('Users')
+            .where('userId', isNotEqualTo: currentUserId)
+            .get();
+    allUsers.value =
+        snapshot.docs.map((doc) => UserModel.fromJson(doc.data())).toList();
   }
 }

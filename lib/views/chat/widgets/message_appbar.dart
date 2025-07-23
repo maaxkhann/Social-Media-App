@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/extensions/sized_box.dart';
+import 'package:social_media/views/chat/widgets/group_member_selector.dart';
 
 class MessageAppBar extends StatelessWidget {
   final String? image;
@@ -14,6 +16,7 @@ class MessageAppBar extends StatelessWidget {
       children: [
         20.spaceY,
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 20),
@@ -24,6 +27,18 @@ class MessageAppBar extends StatelessWidget {
                       'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 ),
               ),
+            ),
+            PopupMenuButton(
+              iconColor: AppColors.white,
+              itemBuilder:
+                  (context) => [
+                    PopupMenuItem(
+                      child: GestureDetector(
+                        onTap: () => Get.to(() => GroupMemberSelector()),
+                        child: Text('Create group'),
+                      ),
+                    ),
+                  ],
             ),
           ],
         ),
