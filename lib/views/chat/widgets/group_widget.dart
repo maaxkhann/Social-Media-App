@@ -1,93 +1,89 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
+import 'package:social_media/controllers/chat_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
+import 'package:social_media/views/chat/group_chat_page.dart';
 
-class GroupWidget extends StatelessWidget {
+class GroupWidget extends StatefulWidget {
   const GroupWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 25,
-                  foregroundImage: NetworkImage(
-                    'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                  ),
-                ),
+  State<GroupWidget> createState() => _GroupWidgetState();
+}
 
-                Positioned(
-                  bottom: 5,
-                  right: 1,
-                  child: CircleAvatar(
-                    radius: 6,
-                    backgroundColor: AppColors.yellow,
-                  ),
-                ),
-              ],
-            ),
-            12.spaceX,
-            Expanded(
-              flex: 8,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomText(
-                    title: 'Buisness Ideas',
-                    size: 13,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+class _GroupWidgetState extends State<GroupWidget> {
+  final chatController = Get.find<ChatController>();
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<QueryDocumentSnapshot>>(
+      stream: chatController.groupsOf(chatController.auth.currentUser!.uid),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        final groups = snapshot.data ?? [];
+
+        if (groups.isEmpty) {
+          return Center(child: Text("No groups found"));
+        }
+
+        return ListView.separated(
+          itemCount: groups.length,
+          separatorBuilder: (context, index) => 18.spaceY,
+          itemBuilder: (context, index) {
+            final group = groups[index];
+            final groupName = group['name'];
+            final groupId = group.id;
+
+            return ListTile(
+              onTap: () {
+                Get.to(
+                  () => GroupChatPage(groupId: groupId, groupName: groupName),
+                );
+              },
+              title: CustomText(
+                title: groupName,
+                fontWeight: FontWeight.w800,
+                size: 14,
+              ),
+              subtitle: StreamBuilder(
+                stream: chatController.chatStream(groupId),
+                builder: (context, snap) {
+                  if (!snap.hasData || snap.data!.isEmpty) {
+                    return Text("No messages yet");
+                  }
+
+                  final lastMsg = snap.data!.first;
+                  return Row(
                     children: [
-                      CustomText(
-                        title: 'Rashid: ',
-                        size: 13,
-                        fontWeight: FontWeight.w800,
+                      Text(
+                        "${lastMsg['senderName']}: ",
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Expanded(
-                        child: CustomText(
-                          title:
-                              'Hi Iike your work which is very amazing want to know more...',
-                          size: 11,
-                          fontWeight: FontWeight.w600,
+                        child: Text(
+                          lastMsg['text'] ?? "",
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                     ],
-                  ),
-                ],
+                  );
+                },
               ),
-            ),
-            Spacer(),
-            Column(
-              children: [
-                CustomText(
-                  title: '10:44 PM',
-                  size: 10,
-                  color: AppColors.yellow,
-                  fontWeight: FontWeight.w700,
+              leading: CircleAvatar(
+                backgroundImage: NetworkImage(
+                  "https://ui-avatars.com/api/?name=${Uri.encodeComponent(groupName)}&background=random",
                 ),
-                5.spaceY,
-                CircleAvatar(
-                  radius: 10,
-                  backgroundColor: AppColors.yellow,
-                  child: CustomText(
-                    title: '1',
-                    size: 12,
-                    color: AppColors.white,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

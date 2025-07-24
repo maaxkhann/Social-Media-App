@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_media/models/chat_model.dart';
 import 'package:social_media/models/chat_user_model.dart';
@@ -31,6 +30,7 @@ class ChatController extends GetxController {
     required String currentUserId,
     required String? otherUserId, // optional for group
     required String messageText,
+    String? voiceUrl,
     String? chatId, // required for group
     bool isGroup = false,
   }) async {
@@ -45,6 +45,7 @@ class ChatController extends GetxController {
     await chatRef.collection('messages').add({
       'senderId': currentUserId,
       'text': messageText,
+      'voiceUrl': voiceUrl,
       'timestamp': now,
       'read': false,
     });
@@ -95,8 +96,11 @@ class ChatController extends GetxController {
                 await firestore.collection('Users').doc(otherUserId).get();
             NotificationServices().sendFCMNotification(
               token: userData.data()?['fcmToken'],
-              title: 'Flutter',
-              body: messageText,
+              title: userData.data()?['name'],
+              body:
+                  messageText.isNotEmpty
+                      ? messageText
+                      : 'sent you voice message',
             );
           });
     }
@@ -176,5 +180,82 @@ class ChatController extends GetxController {
     for (var doc in docsToUpdate) {
       doc.reference.update({'read': true});
     }
+  }
+
+  //for group
+  /// Create a new group with name and member UIDs
+  Future<DocumentReference> createGroup(
+    String groupName,
+    List<String> userIds,
+  ) {
+    return firestore.collection('groups').add({
+      'name': groupName,
+      'members': userIds,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Send a message within a group
+  Future<void> sendGroupMessage({
+    required String groupId,
+    required String senderId,
+    required String senderName,
+    required String senderImage,
+    required String message,
+    String? voiceUrl,
+  }) async {
+    final groupRef = firestore.collection('groups').doc(groupId);
+
+    // Send the message
+    await groupRef.collection('messages').add({
+      'senderId': senderId,
+      'senderName': senderName,
+      'senderImage': senderImage,
+      'text': message,
+      'voiceUrl': voiceUrl,
+      'timestamp': FieldValue.serverTimestamp(),
+      'readBy': [senderId],
+    });
+
+    // Get group members
+    final groupDoc = await groupRef.get();
+    final members = List<String>.from(groupDoc['members']);
+
+    // Get token for all members except sender
+    for (final uid in members) {
+      if (uid == senderId) continue;
+
+      final userDoc =
+          await FirebaseFirestore.instance.collection('Users').doc(uid).get();
+      final token = userDoc['fcmToken'];
+
+      if (token != null && token.toString().isNotEmpty) {
+        await NotificationServices().sendFCMNotification(
+          token: token,
+          title: groupDoc['name'],
+          body: "$senderName: $message",
+        );
+      }
+    }
+  }
+
+  /// Listen to chat messages ordered by time, descending
+  Stream<List<QueryDocumentSnapshot>> chatStream(String groupId) {
+    return firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs);
+  }
+
+  /// Retrieve all groups the current user is part of
+  Stream<List<QueryDocumentSnapshot>> groupsOf(String userId) {
+    return firestore
+        .collection('groups')
+        .where('members', arrayContains: userId)
+        .snapshots()
+        .map((snap) => snap.docs);
   }
 }

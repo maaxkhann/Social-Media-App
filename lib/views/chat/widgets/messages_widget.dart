@@ -68,7 +68,7 @@ class _MessagesWidgetState extends State<MessagesWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CustomText(
-                              title: chatUser.user!.name,
+                              title: chatUser.user?.name ?? '',
                               size: 13,
                               fontWeight: FontWeight.w700,
                             ),

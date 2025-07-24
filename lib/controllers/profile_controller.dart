@@ -14,6 +14,11 @@ class ProfileController extends GetxController {
   RxInt followersCount = 0.obs;
   RxInt followingCount = 0.obs;
   RxList<UserModel> allUsers = <UserModel>[].obs;
+  RxInt navBarIndex = 0.obs;
+
+  changeNavBarIndex(int index) {
+    navBarIndex.value = index;
+  }
 
   @override
   void onInit() {

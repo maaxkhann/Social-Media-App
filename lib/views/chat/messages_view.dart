@@ -56,13 +56,7 @@ class _MessagesViewState extends State<MessagesView>
             children: [
               MessagesWidget(),
               //  GroupMemberSelector(),
-              ListView.separated(
-                itemCount: 10,
-                separatorBuilder: (context, index) => 18.spaceY,
-                itemBuilder: (context, index) {
-                  return GroupWidget();
-                },
-              ),
+              GroupWidget(),
               SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

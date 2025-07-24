@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:social_media/controllers/chat_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 
@@ -12,7 +13,9 @@ class GroupMemberSelector extends StatefulWidget {
 
 class _GroupMemberSelectorState extends State<GroupMemberSelector> {
   final profileController = Get.find<ProfileController>();
+  final chatController = Get.find<ChatController>();
   final RxSet<String> selectedUserIds = <String>{}.obs;
+  final groupNameCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -25,6 +28,11 @@ class _GroupMemberSelectorState extends State<GroupMemberSelector> {
     return SafeArea(
       child: Column(
         children: [
+          TextField(
+            controller: groupNameCtrl,
+            decoration: InputDecoration(labelText: "Group Name"),
+          ),
+          20.spaceY,
           Obx(() {
             if (selectedUserIds.isEmpty) return SizedBox();
             return Container(
@@ -47,7 +55,7 @@ class _GroupMemberSelectorState extends State<GroupMemberSelector> {
                             ),
                             4.spaceY,
                             Text(
-                              user?.name.split(' ').first ?? '',
+                              user?.name?.split(' ').first ?? '',
                               style: TextStyle(fontSize: 10),
                             ),
                           ],
@@ -71,24 +79,45 @@ class _GroupMemberSelectorState extends State<GroupMemberSelector> {
                   final isSelected = selectedUserIds.contains(user.userId);
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: NetworkImage(user.image),
+                      backgroundImage: NetworkImage(user.image ?? ''),
                     ),
-                    title: Text(user.name),
+                    title: Text(user.name ?? ''),
                     trailing: Checkbox(
                       value: isSelected,
                       onChanged: (value) {
-                        toggleSelection(user.userId);
+                        toggleSelection(user.userId ?? '');
                         setState(() {});
                       },
                     ),
                     onTap: () {
-                      toggleSelection(user.userId);
+                      toggleSelection(user.userId ?? '');
                       setState(() {});
                     },
                   );
                 },
               );
             }),
+          ),
+          20.spaceY,
+          ElevatedButton(
+            onPressed:
+                selectedUserIds.isNotEmpty && groupNameCtrl.text.isNotEmpty
+                    ? () async {
+                      final currentUserId =
+                          profileController.auth.currentUser?.uid;
+                      final members =
+                          [
+                            currentUserId,
+                            ...selectedUserIds,
+                          ].whereType<String>().toList();
+                      final docRef = await chatController.createGroup(
+                        groupNameCtrl.text,
+                        members,
+                      );
+                      Get.back(result: docRef.id);
+                    }
+                    : null,
+            child: Text("Create"),
           ),
         ],
       ),

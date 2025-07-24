@@ -14,6 +14,7 @@ import 'package:social_media/extensions/build_context.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/shared/utilities/pickers.dart';
+import 'package:social_media/utilities/pops.dart';
 import 'package:social_media/views/auth/widgets/doc_upload_container.dart';
 
 class RegisterView extends StatefulWidget {
@@ -35,6 +36,7 @@ class _RegisterViewState extends State<RegisterView> {
   String? image;
   @override
   Widget build(BuildContext context) {
+    // Pops.stopLoading();
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(

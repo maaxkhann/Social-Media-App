@@ -3,14 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_media/components/custom_textfield.dart';
-import 'package:social_media/components/stories_widget.dart';
 import 'package:social_media/constants/app_colors.dart';
-import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
-import 'package:social_media/shared/console.dart';
-import 'package:social_media/shared/utilities/pickers.dart';
+import 'package:social_media/utilities/pops.dart';
 import 'package:social_media/utilities/thumbnail.dart';
 import 'package:social_media/views/post/widgets/media_picker_sheet.dart';
 

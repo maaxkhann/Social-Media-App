@@ -4,10 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
+import 'package:social_media/components/custom_bottom_nav_bar.dart';
 import 'package:social_media/controllers/notifications_controller.dart';
+import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/models/comments_model.dart';
 import 'package:social_media/models/post_model.dart';
 import 'package:social_media/models/user_model.dart';
+import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/shared/console.dart';
 import 'package:social_media/utilities/pops.dart';
 
@@ -27,6 +30,7 @@ class PostController extends GetxController {
   RxBool autoFocus = false.obs;
   RxBool isPostsLoading = false.obs;
   RxnString replyingToCommentId = RxnString();
+  final profileController = Get.find<ProfileController>();
 
   @override
   void onInit() {
@@ -93,7 +97,7 @@ class PostController extends GetxController {
         'timestamp': FieldValue.serverTimestamp(),
       });
       Pops.stopLoading();
-
+      profileController.changeNavBarIndex(0);
       console('Post created: $postId');
       Get.snackbar('Success', 'Post uploaded successfully');
       fetchInitialPosts();

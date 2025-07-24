@@ -4,11 +4,11 @@ import 'package:get/get.dart';
 import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/chat_controller.dart';
-import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/chat_model.dart';
 import 'package:social_media/views/chat/widgets/chat_appbar.dart';
 import 'package:social_media/views/chat/widgets/chat_bottombar.dart';
+import 'package:social_media/views/chat/widgets/voice_message_widget.dart';
 
 class ChatView extends StatefulWidget {
   const ChatView({super.key});
@@ -67,7 +67,7 @@ class _ChatViewState extends State<ChatView> {
                   return ListView.separated(
                     reverse: true,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 28,
+                      horizontal: 18,
                       vertical: 18,
                     ),
                     itemCount: messages.length,
@@ -108,14 +108,18 @@ class _ChatViewState extends State<ChatView> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  CustomText(
-                                    title: message.text,
-                                    size: 11,
-                                    color:
-                                        isMine
-                                            ? AppColors.white
-                                            : AppColors.black.withAlpha(200),
-                                  ),
+                                  if (message.voiceUrl != null &&
+                                      message.voiceUrl!.isNotEmpty)
+                                    VoiceMessageWidget(url: message.voiceUrl!)
+                                  else
+                                    CustomText(
+                                      title: message.text,
+                                      size: 11,
+                                      color:
+                                          isMine
+                                              ? AppColors.white
+                                              : AppColors.black.withAlpha(200),
+                                    ),
                                   2.spaceY,
                                   CustomText(
                                     title: formattedTime,
