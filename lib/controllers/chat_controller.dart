@@ -94,9 +94,11 @@ class ChatController extends GetxController {
           .then((val) async {
             final userData =
                 await firestore.collection('Users').doc(otherUserId).get();
-            NotificationServices().sendFCMNotification(
+            final currentUser =
+                await firestore.collection('Users').doc(currentUserId).get();
+            await NotificationServices().sendFCMNotification(
               token: userData.data()?['fcmToken'],
-              title: userData.data()?['name'],
+              title: currentUser.data()?['name'] ?? 'unknown',
               body:
                   messageText.isNotEmpty
                       ? messageText

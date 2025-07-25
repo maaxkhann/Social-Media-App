@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:social_media/components/custom_appbar.dart';
 import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/extensions/sized_box.dart';
+import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/views/profile/widgets/experience_education.dart';
 import 'package:social_media/views/profile/widgets/profile_widget.dart';
 
@@ -14,13 +17,34 @@ class ProfileView extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 12.spaceY,
               // CustomAppBar(),
-              34.spaceY,
+              4.spaceY,
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  visualDensity: VisualDensity.compact,
+                  color: AppColors.primaryColor,
+                  onPressed: () async {
+                    final sp = await SharedPreferences.getInstance();
+                    sp
+                        .setBool('isLogin', false)
+                        .then(
+                          (value) => Get.offNamedUntil(
+                            AppRoutes.loginView,
+                            (route) =>
+                                route.settings.name == AppRoutes.loginView,
+                          ),
+                        );
+                  },
+                  icon: Icon(Icons.logout),
+                ),
+              ),
+              4.spaceY,
               ProfileWidget(),
               20.spaceY,
               Divider(
@@ -74,6 +98,7 @@ class ProfileView extends StatelessWidget {
                 subtitle: 'Comsatsuniversity, Abottabad',
                 date: 'May 2019 - May 2023',
               ),
+              12.spaceY,
             ],
           ),
         ),

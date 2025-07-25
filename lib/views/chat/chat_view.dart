@@ -31,7 +31,6 @@ class _ChatViewState extends State<ChatView> {
 
   @override
   Widget build(BuildContext context) {
-    final chatController = Get.put(ChatController());
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: true,
@@ -77,6 +76,9 @@ class _ChatViewState extends State<ChatView> {
                       final isMine =
                           message.senderId ==
                           chatController.auth.currentUser!.uid;
+                      final isVoice =
+                          message.voiceUrl != null &&
+                          message.voiceUrl!.isNotEmpty;
 
                       final time = (message.timestamp as Timestamp?)?.toDate();
                       final formattedTime =
@@ -93,9 +95,9 @@ class _ChatViewState extends State<ChatView> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 8,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isVoice ? 4 : 8,
+                                vertical: isVoice ? 4 : 8,
                               ),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
@@ -108,8 +110,7 @@ class _ChatViewState extends State<ChatView> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  if (message.voiceUrl != null &&
-                                      message.voiceUrl!.isNotEmpty)
+                                  if (isVoice)
                                     VoiceMessageWidget(url: message.voiceUrl!)
                                   else
                                     CustomText(

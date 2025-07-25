@@ -2,20 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:social_media/models/user_model.dart';
 
 class ChatUserModel {
-  final String otherUserId;
-  final String lastMessage;
+  final String? otherUserId;
+  final String? lastMessage;
   final DateTime? lastMessageTimestamp;
-  final bool isGroup;
-  final int unreadCount;
+  final bool? isGroup;
+  final int? unreadCount;
 
   final UserModel? user;
 
   ChatUserModel({
-    required this.otherUserId,
-    required this.lastMessage,
-    required this.lastMessageTimestamp,
-    required this.isGroup,
-    required this.unreadCount,
+    this.otherUserId,
+    this.lastMessage,
+    this.lastMessageTimestamp,
+    this.isGroup,
+    this.unreadCount,
 
     this.user,
   });

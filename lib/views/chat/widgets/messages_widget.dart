@@ -72,7 +72,13 @@ class _MessagesWidgetState extends State<MessagesWidget> {
                               size: 13,
                               fontWeight: FontWeight.w700,
                             ),
-                            CustomText(title: chatUser.lastMessage, size: 11),
+                            CustomText(
+                              title:
+                                  (chatUser.lastMessage?.isNotEmpty ?? false)
+                                      ? chatUser.lastMessage!
+                                      : 'voice message',
+                              size: 11,
+                            ),
                           ],
                         ),
                       ),
@@ -85,13 +91,13 @@ class _MessagesWidgetState extends State<MessagesWidget> {
                                     ? TimeOfDay.fromDateTime(
                                       chatUser.lastMessageTimestamp!,
                                     ).format(context)
-                                    : 'null',
+                                    : '',
                             size: 10,
                             color: AppColors.yellow,
                             fontWeight: FontWeight.w700,
                           ),
                           5.spaceY,
-                          if (chatUser.unreadCount > 0)
+                          if ((chatUser.unreadCount ?? 0) > 0)
                             CircleAvatar(
                               radius: 10,
                               backgroundColor: AppColors.yellow,

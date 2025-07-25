@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:social_media/constants/app_colors.dart';
+import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/extensions/sized_box.dart';
 
 class VoiceMessageWidget extends StatefulWidget {
@@ -110,7 +111,7 @@ class _VoiceMessageWidgetState extends State<VoiceMessageWidget> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      //  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
       decoration: BoxDecoration(
         color: AppColors.blue,
         borderRadius: BorderRadius.circular(24),
@@ -119,6 +120,8 @@ class _VoiceMessageWidgetState extends State<VoiceMessageWidget> {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
+            visualDensity: VisualDensity.compact,
+            color: AppColors.lightGrey,
             icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
             onPressed: togglePlay,
           ),
@@ -126,13 +129,17 @@ class _VoiceMessageWidgetState extends State<VoiceMessageWidget> {
             width: 100,
             child: LinearProgressIndicator(
               value: progressValue,
-              backgroundColor: Colors.grey[300],
-              color: Colors.blueAccent,
-              minHeight: 4,
+              backgroundColor: AppColors.lightGrey,
+              //   color: Colors.blueAccent,
+              //  minHeight: 4,
             ),
           ),
           8.spaceX,
-          Text(formatDuration(_position), style: const TextStyle(fontSize: 12)),
+          CustomText(
+            title: formatDuration(_position),
+            size: 12,
+            color: AppColors.lightShadeGrey,
+          ),
         ],
       ),
     );
