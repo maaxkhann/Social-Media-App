@@ -4,13 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
-import 'package:social_media/components/custom_bottom_nav_bar.dart';
 import 'package:social_media/controllers/notifications_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/models/comments_model.dart';
 import 'package:social_media/models/post_model.dart';
 import 'package:social_media/models/user_model.dart';
-import 'package:social_media/routes/app_routes.dart';
 import 'package:social_media/shared/console.dart';
 import 'package:social_media/utilities/pops.dart';
 

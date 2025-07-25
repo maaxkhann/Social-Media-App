@@ -19,6 +19,7 @@ class ChatView extends StatefulWidget {
 
 class _ChatViewState extends State<ChatView> {
   final chatController = Get.put(ChatController());
+  final scrollController = ScrollController();
   String chatId = '';
   @override
   void initState() {
@@ -26,7 +27,24 @@ class _ChatViewState extends State<ChatView> {
       chatController.auth.currentUser!.uid,
       Get.arguments[0],
     );
+    chatController.getMessages(chatId: chatId);
+    scrollController.addListener(_onScroll);
     super.initState();
+  }
+
+  _onScroll() {
+    if (scrollController.position.pixels >=
+            scrollController.position.maxScrollExtent - 200 &&
+        !chatController.isLoadingMoreMsgs.value &&
+        chatController.hasMore) {
+      chatController.getMessages(chatId: chatId);
+    }
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -38,124 +56,256 @@ class _ChatViewState extends State<ChatView> {
         body: Column(
           children: [
             Expanded(
-              child: StreamBuilder<List<ChatModel>>(
-                stream: chatController.getMessages(chatId: chatId),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
-                  }
+              child: Obx(() {
+                final messages = chatController.msgList;
+                if (chatController.isInitialLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                // final messages = snapshot.data!;
+                // Mark unread messages as read if they're not sent by me
+                final unread =
+                    messages
+                        .where(
+                          (msg) =>
+                              !msg.read &&
+                              msg.senderId !=
+                                  chatController.auth.currentUser!.uid,
+                        )
+                        .toList();
 
-                  final messages = snapshot.data!;
-                  // Mark unread messages as read if they're not sent by me
-                  final unread =
-                      messages
-                          .where(
-                            (msg) =>
-                                !msg.read &&
-                                msg.senderId !=
-                                    chatController.auth.currentUser!.uid,
-                          )
-                          .toList();
+                if (unread.isNotEmpty) {
+                  chatController.markMessagesAsRead(
+                    chatId,
+                    chatController.auth.currentUser!.uid,
+                  );
+                }
+                return ListView.separated(
+                  controller: scrollController,
+                  itemCount: messages.length + 1,
+                  reverse: true,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 18,
+                  ),
+                  separatorBuilder: (_, __) => 18.spaceY,
+                  itemBuilder: (context, index) {
+                    if (index == messages.length) {
+                      return Center(
+                        child:
+                            chatController.hasMore
+                                ? const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const SizedBox.shrink(),
+                      );
+                    }
 
-                  if (unread.isNotEmpty) {
-                    chatController.markMessagesAsRead(
-                      chatId,
-                      chatController.auth.currentUser!.uid,
-                    );
-                  }
-                  return ListView.separated(
-                    reverse: true,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 18,
-                    ),
-                    itemCount: messages.length,
-                    separatorBuilder: (_, __) => 18.spaceY,
-                    itemBuilder: (context, index) {
-                      final message = messages[index];
-                      final isMine =
-                          message.senderId ==
-                          chatController.auth.currentUser!.uid;
-                      final isVoice =
-                          message.voiceUrl != null &&
-                          message.voiceUrl!.isNotEmpty;
+                    final message = messages[index];
+                    final isMine =
+                        message.senderId ==
+                        chatController.auth.currentUser!.uid;
+                    final isVoice =
+                        message.voiceUrl != null &&
+                        message.voiceUrl!.isNotEmpty;
 
-                      final time = (message.timestamp as Timestamp?)?.toDate();
-                      final formattedTime =
-                          time != null
-                              ? TimeOfDay.fromDateTime(time).format(context)
-                              : '';
+                    final time = (message.timestamp as Timestamp?)?.toDate();
+                    final formattedTime =
+                        time != null
+                            ? TimeOfDay.fromDateTime(time).format(context)
+                            : '';
 
-                      return Align(
-                        alignment:
-                            isMine
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isVoice ? 4 : 8,
-                                vertical: isVoice ? 4 : 8,
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color:
-                                    isMine
-                                        ? AppColors.blue
-                                        : AppColors.lightShadeGrey,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (isVoice)
-                                    VoiceMessageWidget(url: message.voiceUrl!)
-                                  else
-                                    CustomText(
-                                      title: message.text,
-                                      size: 11,
-                                      color:
-                                          isMine
-                                              ? AppColors.white
-                                              : AppColors.black.withAlpha(200),
-                                    ),
-                                  2.spaceY,
+                    return Align(
+                      alignment:
+                          isMine ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isVoice ? 4 : 8,
+                              vertical: isVoice ? 4 : 8,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color:
+                                  isMine
+                                      ? AppColors.blue
+                                      : AppColors.lightShadeGrey,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isVoice)
+                                  VoiceMessageWidget(url: message.voiceUrl!)
+                                else
                                   CustomText(
-                                    title: formattedTime,
-                                    size: 10,
+                                    title: message.text,
+                                    size: 11,
                                     color:
                                         isMine
                                             ? AppColors.white
                                             : AppColors.black.withAlpha(200),
                                   ),
-                                ],
+                                2.spaceY,
+                                CustomText(
+                                  title: formattedTime,
+                                  size: 10,
+                                  color:
+                                      isMine
+                                          ? AppColors.white
+                                          : AppColors.black.withAlpha(200),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isMine)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 2),
+                              child: Icon(
+                                Icons.check,
+                                size: 12,
+                                color:
+                                    message.read
+                                        ? AppColors.blue
+                                        : AppColors.black,
                               ),
                             ),
-                            if (isMine)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 2),
-                                child: Icon(
-                                  Icons.check,
-                                  size: 12,
-                                  color:
-                                      message.read
-                                          ? AppColors.blue
-                                          : AppColors.black,
-                                ),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }),
             ),
             ChatBottomBar(otherUserId: Get.arguments[0]),
           ],
         ),
+
+        // Column(
+        //   children: [
+        //     Expanded(
+        //       child: StreamBuilder<List<ChatModel>>(
+        //         stream: chatController.getMessages(chatId: chatId),
+        //         builder: (context, snapshot) {
+        //           if (!snapshot.hasData) {
+        //             return Center(child: CircularProgressIndicator());
+        //           }
+
+        //           final messages = snapshot.data!;
+        //           // Mark unread messages as read if they're not sent by me
+        //           final unread =
+        //               messages
+        //                   .where(
+        //                     (msg) =>
+        //                         !msg.read &&
+        //                         msg.senderId !=
+        //                             chatController.auth.currentUser!.uid,
+        //                   )
+        //                   .toList();
+
+        //           if (unread.isNotEmpty) {
+        //             chatController.markMessagesAsRead(
+        //               chatId,
+        //               chatController.auth.currentUser!.uid,
+        //             );
+        //           }
+        //           return ListView.separated(
+        //             reverse: true,
+        //             padding: const EdgeInsets.symmetric(
+        //               horizontal: 18,
+        //               vertical: 18,
+        //             ),
+        //             itemCount: messages.length,
+        //             separatorBuilder: (_, __) => 18.spaceY,
+        //             itemBuilder: (context, index) {
+        //               final message = messages[index];
+        //               final isMine =
+        //                   message.senderId ==
+        //                   chatController.auth.currentUser!.uid;
+        //               final isVoice =
+        //                   message.voiceUrl != null &&
+        //                   message.voiceUrl!.isNotEmpty;
+
+        //               final time = (message.timestamp as Timestamp?)?.toDate();
+        //               final formattedTime =
+        //                   time != null
+        //                       ? TimeOfDay.fromDateTime(time).format(context)
+        //                       : '';
+
+        //               return Align(
+        //                 alignment:
+        //                     isMine
+        //                         ? Alignment.centerRight
+        //                         : Alignment.centerLeft,
+        //                 child: Column(
+        //                   crossAxisAlignment: CrossAxisAlignment.end,
+        //                   children: [
+        //                     Container(
+        //                       padding: EdgeInsets.symmetric(
+        //                         horizontal: isVoice ? 4 : 8,
+        //                         vertical: isVoice ? 4 : 8,
+        //                       ),
+        //                       decoration: BoxDecoration(
+        //                         borderRadius: BorderRadius.circular(10),
+        //                         color:
+        //                             isMine
+        //                                 ? AppColors.blue
+        //                                 : AppColors.lightShadeGrey,
+        //                       ),
+        //                       child: Column(
+        //                         crossAxisAlignment: CrossAxisAlignment.end,
+        //                         mainAxisSize: MainAxisSize.min,
+        //                         children: [
+        //                           if (isVoice)
+        //                             VoiceMessageWidget(url: message.voiceUrl!)
+        //                           else
+        //                             CustomText(
+        //                               title: message.text,
+        //                               size: 11,
+        //                               color:
+        //                                   isMine
+        //                                       ? AppColors.white
+        //                                       : AppColors.black.withAlpha(200),
+        //                             ),
+        //                           2.spaceY,
+        //                           CustomText(
+        //                             title: formattedTime,
+        //                             size: 10,
+        //                             color:
+        //                                 isMine
+        //                                     ? AppColors.white
+        //                                     : AppColors.black.withAlpha(200),
+        //                           ),
+        //                         ],
+        //                       ),
+        //                     ),
+        //                     if (isMine)
+        //                       Padding(
+        //                         padding: const EdgeInsets.only(right: 2),
+        //                         child: Icon(
+        //                           Icons.check,
+        //                           size: 12,
+        //                           color:
+        //                               message.read
+        //                                   ? AppColors.blue
+        //                                   : AppColors.black,
+        //                         ),
+        //                       ),
+        //                   ],
+        //                 ),
+        //               );
+        //             },
+        //           );
+        //         },
+        //       ),
+        //     ),
+        //     ChatBottomBar(otherUserId: Get.arguments[0]),
+        //   ],
+        // ),
       ),
     );
   }

@@ -7,7 +7,6 @@ import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
-import 'package:social_media/utilities/pops.dart';
 import 'package:social_media/utilities/thumbnail.dart';
 import 'package:social_media/views/post/widgets/media_picker_sheet.dart';
 

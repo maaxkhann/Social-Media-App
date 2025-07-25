@@ -108,19 +108,45 @@ class ChatController extends GetxController {
     }
   }
 
-  Stream<List<ChatModel>> getMessages({required String chatId}) {
-    return FirebaseFirestore.instance
+  final RxList<ChatModel> _msgList = <ChatModel>[].obs;
+  RxList<ChatModel> get msgList => _msgList;
+  DocumentSnapshot? lastMsgDoc;
+  RxBool isLoadingMoreMsgs = false.obs;
+  RxBool isInitialLoading = true.obs;
+
+  bool hasMore = false;
+
+  Future<void> getMessages({required String chatId, limit = 12}) async {
+    if (isLoadingMoreMsgs.value) isInitialLoading.value = true;
+    isLoadingMoreMsgs.value = true;
+    Query query = FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .orderBy('timestamp', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs
-                  .map((doc) => ChatModel.fromMap(doc.data()))
-                  .toList(),
-        );
+        .limit(limit);
+    if (lastMsgDoc != null) {
+      query = query.startAfterDocument(lastMsgDoc!);
+    }
+    QuerySnapshot querySnapshot = await query.get();
+    final newMessages =
+        querySnapshot.docs
+            .map((doc) => ChatModel.fromMap(doc.data() as Map<String, dynamic>))
+            .toList();
+    _msgList.addAll(newMessages);
+    lastMsgDoc = querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
+    hasMore = querySnapshot.docs.length == limit;
+    isLoadingMoreMsgs.value = false;
+      isInitialLoading.value = false; // mark initial load complete
+
+
+    // .snapshots()
+    // .map(
+    //   (snapshot) =>
+    //       snapshot.docs
+    //           .map((doc) => ChatModel.fromMap(doc.data()))
+    //           .toList(),
+    // );
   }
 
   Stream<List<ChatUserModel>> getUserChats(String uid) {
