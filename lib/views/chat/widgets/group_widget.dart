@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/chat_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
