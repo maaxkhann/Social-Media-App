@@ -1,14 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:social_media/components/custom_appbar.dart';
 import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/chat_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
+import 'package:social_media/models/group_messages_model.dart';
 import 'package:social_media/views/chat/widgets/chat_appbar.dart';
 import 'package:social_media/views/chat/widgets/chat_bottombar.dart';
+import 'package:social_media/views/chat/widgets/voice_message_widget.dart';
 
 class GroupChatPage extends StatefulWidget {
   final String groupId;
@@ -29,20 +30,17 @@ class _GroupChatPageState extends State<GroupChatPage> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final chatController = Get.find<ChatController>();
   final profileController = Get.find<ProfileController>();
+
   List<String> groupMembers = [];
 
   @override
   void initState() {
     super.initState();
-    FirebaseFirestore.instance
-        .collection('groups')
-        .doc(widget.groupId)
-        .get()
-        .then((doc) {
-          setState(() {
-            groupMembers = List<String>.from(doc['members'] ?? []);
-          });
-        });
+    firestore.collection('groups').doc(widget.groupId).get().then((doc) {
+      setState(() {
+        groupMembers = List<String>.from(doc['members'] ?? []);
+      });
+    });
   }
 
   @override
@@ -53,30 +51,33 @@ class _GroupChatPageState extends State<GroupChatPage> {
         groupId: widget.groupId,
         groupName: widget.groupName,
       ),
-
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder(
+            child: StreamBuilder<List<GroupMessagesModel>>(
               stream: chatController.chatStream(widget.groupId),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
-                final messages = snapshot.data!;
-                // Mark unread messages as read
-                for (final msg in messages) {
-                  final msgRef = msg.reference;
-                  final data = msg.data() as Map<String, dynamic>;
 
-                  if (!(data['readBy'] as List).contains(
-                    chatController.auth.currentUser!.uid,
+                final messages = snapshot.data ?? [];
+
+                // ✅ Mark unread messages as read safely
+                for (final msg in messages) {
+                  if (!(msg.readBy ?? []).contains(
+                    chatController.auth.currentUser?.uid,
                   )) {
-                    msgRef.update({
-                      'readBy': FieldValue.arrayUnion([
-                        chatController.auth.currentUser!.uid,
-                      ]),
-                    });
+                    firestore
+                        .collection('groups')
+                        .doc(widget.groupId)
+                        .collection('messages')
+                        .doc(msg.id)
+                        .update({
+                          'readBy': FieldValue.arrayUnion([
+                            chatController.auth.currentUser?.uid,
+                          ]),
+                        });
                   }
                 }
 
@@ -89,17 +90,18 @@ class _GroupChatPageState extends State<GroupChatPage> {
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final msg = messages[index];
-                    final data = msg.data() as Map<String, dynamic>;
                     final isMe =
-                        data['senderId'] ==
-                        chatController.auth.currentUser!.uid;
-                    final readBy = List<String>.from(data['readBy'] ?? []);
-                    final isRead = readBy.length >= groupMembers.length;
-                    final time = (data['timestamp'] as Timestamp?)?.toDate();
+                        msg.senderId == chatController.auth.currentUser?.uid;
+                    final isRead =
+                        (msg.readBy?.length ?? 0) >= groupMembers.length;
                     final formattedTime =
-                        time != null
-                            ? TimeOfDay.fromDateTime(time).format(context)
+                        msg.timeStamp != null
+                            ? TimeOfDay.fromDateTime(
+                              msg.timeStamp!,
+                            ).format(context)
                             : '';
+                    final isVoice =
+                        (msg.voiceUrl != null && msg.voiceUrl!.isNotEmpty);
 
                     return Row(
                       mainAxisAlignment:
@@ -112,7 +114,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
                           CircleAvatar(
                             radius: 18,
                             backgroundImage: NetworkImage(
-                              msg['senderImage'] ?? '',
+                              msg.senderImage ?? '',
                             ),
                           ),
                         if (!isMe) 8.spaceX,
@@ -135,22 +137,17 @@ class _GroupChatPageState extends State<GroupChatPage> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // if (!isMe)
-                                  //   Text(
-                                  //     msg['senderName'],
-                                  //     style: TextStyle(
-                                  //       fontWeight: FontWeight.bold,
-                                  //       fontSize: 12,
-                                  //     ),
-                                  //   ),
-                                  CustomText(
-                                    title: msg['text'],
-                                    size: 11,
-                                    color:
-                                        isMe
-                                            ? AppColors.white
-                                            : AppColors.black.withAlpha(200),
-                                  ),
+                                  if (isVoice)
+                                    VoiceMessageWidget(url: msg.voiceUrl ?? '')
+                                  else
+                                    CustomText(
+                                      title: msg.text ?? '',
+                                      size: 11,
+                                      color:
+                                          isMe
+                                              ? AppColors.white
+                                              : AppColors.black.withAlpha(200),
+                                    ),
                                   2.spaceY,
                                   CustomText(
                                     title: formattedTime,
@@ -183,7 +180,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
               },
             ),
           ),
-          Divider(height: 1),
+          const Divider(height: 1),
           ChatBottomBar(groupId: widget.groupId, isGroup: true),
         ],
       ),

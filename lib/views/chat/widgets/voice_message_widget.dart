@@ -110,38 +110,31 @@ class _VoiceMessageWidgetState extends State<VoiceMessageWidget> {
       if (progressValue > 1) progressValue = 1;
     }
 
-    return Container(
-      //  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-      decoration: BoxDecoration(
-        color: AppColors.blue,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            color: AppColors.lightGrey,
-            icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-            onPressed: togglePlay,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          color: AppColors.primaryColor,
+          icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+          onPressed: togglePlay,
+        ),
+        SizedBox(
+          width: 100,
+          child: LinearProgressIndicator(
+            value: progressValue,
+            backgroundColor: AppColors.lightGrey,
+            //   color: Colors.blueAccent,
+            //  minHeight: 4,
           ),
-          SizedBox(
-            width: 100,
-            child: LinearProgressIndicator(
-              value: progressValue,
-              backgroundColor: AppColors.lightGrey,
-              //   color: Colors.blueAccent,
-              //  minHeight: 4,
-            ),
-          ),
-          8.spaceX,
-          CustomText(
-            title: formatDuration(_position),
-            size: 12,
-            color: AppColors.lightShadeGrey,
-          ),
-        ],
-      ),
+        ),
+        8.spaceX,
+        CustomText(
+          title: formatDuration(_position),
+          size: 12,
+          color: AppColors.black.withValues(alpha: 0.5),
+        ),
+      ],
     );
   }
 }

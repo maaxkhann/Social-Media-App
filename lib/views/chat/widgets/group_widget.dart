@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/chat_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
+import 'package:social_media/models/group_model.dart';
 import 'package:social_media/views/chat/group_chat_page.dart';
 
 class GroupWidget extends StatefulWidget {
@@ -17,7 +19,7 @@ class _GroupWidgetState extends State<GroupWidget> {
   final chatController = Get.find<ChatController>();
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<QueryDocumentSnapshot>>(
+    return StreamBuilder<List<GroupModel>>(
       stream: chatController.groupsOf(chatController.auth.currentUser!.uid),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -35,22 +37,20 @@ class _GroupWidgetState extends State<GroupWidget> {
           separatorBuilder: (context, index) => 18.spaceY,
           itemBuilder: (context, index) {
             final group = groups[index];
-            final groupName = group['name'];
-            final groupId = group.id;
 
             return ListTile(
               onTap: () {
                 Get.to(
-                  () => GroupChatPage(groupId: groupId, groupName: groupName),
+                  () => GroupChatPage(groupId: group.id, groupName: group.name),
                 );
               },
               title: CustomText(
-                title: groupName,
+                title: group.name,
                 fontWeight: FontWeight.w800,
                 size: 14,
               ),
               subtitle: StreamBuilder(
-                stream: chatController.chatStream(groupId),
+                stream: chatController.chatStream(group.id),
                 builder: (context, snap) {
                   if (!snap.hasData || snap.data!.isEmpty) {
                     return Text("No messages yet");
@@ -60,12 +60,14 @@ class _GroupWidgetState extends State<GroupWidget> {
                   return Row(
                     children: [
                       Text(
-                        "${lastMsg['senderName']}: ",
+                        "${lastMsg.senderName}: ",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Expanded(
                         child: Text(
-                          lastMsg['text'] ?? "",
+                          (lastMsg.text?.isNotEmpty ?? false)
+                              ? lastMsg.text!
+                              : "Voice message",
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
@@ -76,9 +78,21 @@ class _GroupWidgetState extends State<GroupWidget> {
               ),
               leading: CircleAvatar(
                 backgroundImage: NetworkImage(
-                  "https://ui-avatars.com/api/?name=${Uri.encodeComponent(groupName)}&background=random",
+                  "https://ui-avatars.com/api/?name=${Uri.encodeComponent(group.name)}&background=random",
                 ),
               ),
+              trailing:
+                  group.unReadCount > 0
+                      ? CircleAvatar(
+                        radius: 10,
+                        backgroundColor: AppColors.yellow,
+                        child: CustomText(
+                          title: group.unReadCount.toString(),
+                          size: 12,
+                          color: AppColors.white,
+                        ),
+                      )
+                      : null,
             );
           },
         );

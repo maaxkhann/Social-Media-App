@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:social_media/models/chat_model.dart';
 import 'package:social_media/models/chat_user_model.dart';
+import 'package:social_media/models/group_messages_model.dart';
+import 'package:social_media/models/group_model.dart';
 import 'package:social_media/models/user_model.dart';
 import 'package:social_media/services/notification_service.dart';
 
@@ -137,8 +139,7 @@ class ChatController extends GetxController {
     lastMsgDoc = querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
     hasMore = querySnapshot.docs.length == limit;
     isLoadingMoreMsgs.value = false;
-      isInitialLoading.value = false; // mark initial load complete
-
+    isInitialLoading.value = false; // mark initial load complete
 
     // .snapshots()
     // .map(
@@ -268,22 +269,44 @@ class ChatController extends GetxController {
   }
 
   /// Listen to chat messages ordered by time, descending
-  Stream<List<QueryDocumentSnapshot>> chatStream(String groupId) {
+  Stream<List<GroupMessagesModel>> chatStream(String groupId) {
     return firestore
         .collection('groups')
         .doc(groupId)
         .collection('messages')
-        .orderBy('timestamp', descending: true)
+        .orderBy('timeStamp', descending: true) // ✅ fixed field name
         .snapshots()
-        .map((snap) => snap.docs);
+        .map(
+          (snap) =>
+              snap.docs.map((doc) => GroupMessagesModel.fromDoc(doc)).toList(),
+        );
   }
 
   /// Retrieve all groups the current user is part of
-  Stream<List<QueryDocumentSnapshot>> groupsOf(String userId) {
+  Stream<List<GroupModel>> groupsOf(String userId) {
     return firestore
         .collection('groups')
         .where('members', arrayContains: userId)
         .snapshots()
-        .map((snap) => snap.docs);
+        .asyncMap((snap) async {
+          return await Future.wait(
+            snap.docs.map((doc) async {
+              final group = GroupModel.fromMap(doc);
+
+              // Fetch unread count from messages subcollection
+              final unreadSnapshot =
+                  await firestore
+                      .collection('groups')
+                      .doc(group.id)
+                      .collection('messages')
+                      .where('readBy', whereNotIn: [userId])
+                      .get();
+
+              final unreadCount = unreadSnapshot.docs.length;
+
+              return group.copyWith(unReadCount: unreadCount);
+            }),
+          );
+        });
   }
 }
