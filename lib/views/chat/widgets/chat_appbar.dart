@@ -51,14 +51,19 @@ class _ChatAppBarState extends State<ChatAppBar> {
             });
           });
     } else if (widget.otherUserId != null) {
-      profileController.getUserData(otherId: widget.otherUserId);
-      setState(() {
-        name = profileController.userModel.value?.name ?? '';
-        imageUrl =
-            profileController.userModel.value?.image ??
-            'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg';
-        loading = false;
-      });
+      FirebaseFirestore.instance
+          .collection('Users')
+          .doc(widget.otherUserId)
+          .get()
+          .then((doc) {
+            setState(() {
+              name = doc['name'] ?? '';
+              imageUrl =
+                  doc['image'] ??
+                  'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+              loading = false;
+            });
+          });
     }
   }
 

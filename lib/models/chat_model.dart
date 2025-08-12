@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatModel {
   final String senderId;
+  final String id;
   final String text;
   final String? voiceUrl;
   final Timestamp timestamp;
@@ -9,6 +10,7 @@ class ChatModel {
 
   ChatModel({
     required this.senderId,
+    required this.id,
     required this.text,
     this.voiceUrl,
     required this.timestamp,
@@ -18,6 +20,7 @@ class ChatModel {
   factory ChatModel.fromMap(Map<String, dynamic> map) {
     return ChatModel(
       senderId: map['senderId'] ?? '',
+      id: map['id'] ?? '',
       text: map['text'] ?? '',
       voiceUrl: map['voiceUrl'] ?? '',
       timestamp: map['timestamp'] ?? Timestamp.now(),
@@ -28,6 +31,7 @@ class ChatModel {
   Map<String, dynamic> toMap() {
     return {
       'senderId': senderId,
+      'id': id,
       'text': text,
       'voiceUrl': voiceUrl,
       'timestamp': timestamp,

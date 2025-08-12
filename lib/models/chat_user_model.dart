@@ -28,20 +28,20 @@ class ChatUserModel {
           json['lastMessageTimestamp'] != null
               ? (json['lastMessageTimestamp'] as Timestamp).toDate()
               : null,
-      unreadCount: 0, // default
+      unreadCount: json['unreadCount'] ?? 0,
       isGroup: json['isGroup'] ?? false,
       user: user,
     );
   }
 
-  ChatUserModel copyWith({int? unreadCount}) {
-    return ChatUserModel(
-      otherUserId: otherUserId,
-      lastMessage: lastMessage,
-      lastMessageTimestamp: lastMessageTimestamp,
-      unreadCount: unreadCount ?? this.unreadCount,
-      user: user,
-      isGroup: isGroup,
-    );
-  }
+  // ChatUserModel copyWith({int? unreadCount}) {
+  //   return ChatUserModel(
+  //     otherUserId: otherUserId,
+  //     lastMessage: lastMessage,
+  //     lastMessageTimestamp: lastMessageTimestamp,
+  //     unreadCount: unreadCount ?? this.unreadCount,
+  //     user: user,
+  //     isGroup: isGroup,
+  //   );
+  // }
 }

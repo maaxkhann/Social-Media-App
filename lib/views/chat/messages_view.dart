@@ -55,7 +55,6 @@ class _MessagesViewState extends State<MessagesView>
             controller: tabController,
             children: [
               MessagesWidget(),
-              //  GroupMemberSelector(),
               GroupWidget(),
               SingleChildScrollView(
                 child: Column(

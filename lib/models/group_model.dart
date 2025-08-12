@@ -12,7 +12,7 @@ class GroupModel {
     required this.createdAt,
     required this.members,
     required this.name,
-    this.unReadCount = 0,
+    required this.unReadCount,
   });
 
   factory GroupModel.fromMap(DocumentSnapshot doc) {
@@ -23,11 +23,17 @@ class GroupModel {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       members: List<String>.from(data['members'] ?? []),
       name: data['name'] ?? '',
+      unReadCount: data['unreadCount'] ?? 0,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {'createdAt': createdAt, 'members': members, 'name': name};
+    return {
+      'createdAt': createdAt,
+      'members': members,
+      'name': name,
+      'unreadCount': unReadCount,
+    };
   }
 
   GroupModel copyWith({int? unReadCount}) {

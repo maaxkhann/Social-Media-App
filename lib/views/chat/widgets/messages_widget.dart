@@ -38,78 +38,81 @@ class _MessagesWidgetState extends State<MessagesWidget> {
                         AppRoutes.chatView,
                         arguments: [chatUser.otherUserId],
                       ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 25,
-                            foregroundImage: NetworkImage(
-                              chatUser.user?.image ??
-                                  'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                            ),
-                          ),
-
-                          Positioned(
-                            bottom: 5,
-                            right: 1,
-                            child: CircleAvatar(
-                              radius: 6,
-                              backgroundColor: AppColors.yellow,
-                            ),
-                          ),
-                        ],
-                      ),
-                      12.spaceX,
-                      Expanded(
-                        flex: 8,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Stack(
                           children: [
-                            CustomText(
-                              title: chatUser.user?.name ?? '',
-                              size: 13,
-                              fontWeight: FontWeight.w700,
+                            CircleAvatar(
+                              radius: 25,
+                              foregroundImage: NetworkImage(
+                                chatUser.user?.image ??
+                                    'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                              ),
                             ),
-                            CustomText(
-                              title:
-                                  (chatUser.lastMessage?.isNotEmpty ?? false)
-                                      ? chatUser.lastMessage!
-                                      : 'voice message',
-                              size: 11,
+
+                            Positioned(
+                              bottom: 5,
+                              right: 1,
+                              child: CircleAvatar(
+                                radius: 6,
+                                backgroundColor: AppColors.yellow,
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                      Spacer(),
-                      Column(
-                        children: [
-                          CustomText(
-                            title:
-                                chatUser.lastMessageTimestamp != null
-                                    ? TimeOfDay.fromDateTime(
-                                      chatUser.lastMessageTimestamp!,
-                                    ).format(context)
-                                    : '',
-                            size: 10,
-                            color: AppColors.yellow,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          5.spaceY,
-                          if ((chatUser.unreadCount ?? 0) > 0)
-                            CircleAvatar(
-                              radius: 10,
-                              backgroundColor: AppColors.yellow,
-                              child: CustomText(
-                                title: chatUser.unreadCount.toString(),
-                                size: 12,
-                                color: AppColors.white,
+                        12.spaceX,
+                        Expanded(
+                          flex: 8,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CustomText(
+                                title: chatUser.user?.name ?? '',
+                                size: 13,
+                                fontWeight: FontWeight.w700,
                               ),
+                              CustomText(
+                                title:
+                                    (chatUser.lastMessage?.isNotEmpty ?? false)
+                                        ? chatUser.lastMessage!
+                                        : 'voice message',
+                                size: 11,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Spacer(),
+                        Column(
+                          children: [
+                            CustomText(
+                              title:
+                                  chatUser.lastMessageTimestamp != null
+                                      ? TimeOfDay.fromDateTime(
+                                        chatUser.lastMessageTimestamp!,
+                                      ).format(context)
+                                      : '',
+                              size: 10,
+                              color: AppColors.yellow,
+                              fontWeight: FontWeight.w700,
                             ),
-                        ],
-                      ),
-                    ],
+                            5.spaceY,
+                            if ((chatUser.unreadCount ?? 0) > 0)
+                              CircleAvatar(
+                                radius: 10,
+                                backgroundColor: AppColors.yellow,
+                                child: CustomText(
+                                  title: chatUser.unreadCount.toString(),
+                                  size: 12,
+                                  color: AppColors.white,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

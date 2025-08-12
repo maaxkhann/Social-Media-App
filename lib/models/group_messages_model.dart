@@ -31,8 +31,8 @@ class GroupMessagesModel {
       senderName: data['senderName'],
       text: data['text'],
       timeStamp:
-          (data['timeStamp'] is Timestamp)
-              ? (data['timeStamp'] as Timestamp).toDate()
+          (data['timestamp'] is Timestamp)
+              ? (data['timestamp'] as Timestamp).toDate()
               : null,
       voiceUrl: data['voiceUrl'],
     );
@@ -45,7 +45,7 @@ class GroupMessagesModel {
       'senderImage': senderImage,
       'senderName': senderName,
       'text': text,
-      'timeStamp': timeStamp,
+      'timestamp': timeStamp,
       'voiceUrl': voiceUrl,
     };
   }

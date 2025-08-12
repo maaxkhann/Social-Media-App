@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -68,6 +70,7 @@ class ChatController extends GetxController {
               'lastMessage': messageText,
               'lastMessageTimestamp': now,
               'chatId': chatId,
+              'unreadCount': uid == currentUserId ? 0 : FieldValue.increment(1),
               'isGroup': true,
             });
       }
@@ -80,6 +83,7 @@ class ChatController extends GetxController {
             'lastMessage': messageText,
             'lastMessageTimestamp': now,
             'otherUserId': otherUserId,
+            'unreadCount': 0,
             'isGroup': false,
           });
 
@@ -91,6 +95,7 @@ class ChatController extends GetxController {
             'lastMessage': messageText,
             'lastMessageTimestamp': now,
             'otherUserId': currentUserId,
+            'unreadCount': FieldValue.increment(1),
             'isGroup': false,
           })
           .then((val) async {
@@ -115,39 +120,75 @@ class ChatController extends GetxController {
   DocumentSnapshot? lastMsgDoc;
   RxBool isLoadingMoreMsgs = false.obs;
   RxBool isInitialLoading = true.obs;
-
   bool hasMore = false;
+  StreamSubscription? _realtimeSub;
 
+  /// Listen to real-time messages (only new ones)
+  void listenToMessages(String chatId) {
+    // Cancel previous listener (if any)
+    _realtimeSub?.cancel();
+
+    _realtimeSub = FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .limit(1) // Only listen for the newest message
+        .snapshots()
+        .listen((snapshot) {
+          for (var change in snapshot.docChanges) {
+            if (change.type == DocumentChangeType.added) {
+              final newMsg = ChatModel.fromMap({
+                'id': change.doc.id,
+                ...change.doc.data() as Map<String, dynamic>,
+              });
+
+              if (_msgList.isEmpty || _msgList.first.id != newMsg.id) {
+                _msgList.insert(0, newMsg); // Add new messages to the top
+              }
+            }
+          }
+        });
+  }
+
+  /// Paginate older messages (no stream, just once)
   Future<void> getMessages({required String chatId, limit = 12}) async {
-    if (isLoadingMoreMsgs.value) isInitialLoading.value = true;
+    if (isLoadingMoreMsgs.value) return;
     isLoadingMoreMsgs.value = true;
+
     Query query = FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .orderBy('timestamp', descending: true)
         .limit(limit);
+
     if (lastMsgDoc != null) {
       query = query.startAfterDocument(lastMsgDoc!);
     }
+
     QuerySnapshot querySnapshot = await query.get();
     final newMessages =
-        querySnapshot.docs
-            .map((doc) => ChatModel.fromMap(doc.data() as Map<String, dynamic>))
-            .toList();
-    _msgList.addAll(newMessages);
-    lastMsgDoc = querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
-    hasMore = querySnapshot.docs.length == limit;
-    isLoadingMoreMsgs.value = false;
-    isInitialLoading.value = false; // mark initial load complete
+        querySnapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return ChatModel.fromMap({'id': doc.id, ...data});
+        }).toList();
 
-    // .snapshots()
-    // .map(
-    //   (snapshot) =>
-    //       snapshot.docs
-    //           .map((doc) => ChatModel.fromMap(doc.data()))
-    //           .toList(),
-    // );
+    _msgList.addAll(newMessages);
+    lastMsgDoc =
+        querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : lastMsgDoc;
+    hasMore = querySnapshot.docs.length == limit;
+
+    isLoadingMoreMsgs.value = false;
+    isInitialLoading.value = false;
+  }
+
+  void refreshChat() {
+    _msgList.clear();
+    lastMsgDoc = null;
+    isInitialLoading.value = true;
+    hasMore = false;
+    _realtimeSub?.cancel();
   }
 
   Stream<List<ChatUserModel>> getUserChats(String uid) {
@@ -162,19 +203,6 @@ class ChatController extends GetxController {
             snapshot.docs.map((doc) async {
               final data = doc.data();
               final otherUserId = data['otherUserId'];
-              final chatId = channelId(uid, otherUserId);
-
-              final unreadSnapshot =
-                  await firestore
-                      .collection('chats')
-                      .doc(chatId)
-                      .collection('messages')
-                      .where('read', isEqualTo: false)
-                      .where('senderId', isEqualTo: otherUserId)
-                      .get();
-
-              final unreadCount = unreadSnapshot.docs.length;
-
               // Fetch user document
               final userDoc =
                   await firestore.collection('Users').doc(otherUserId).get();
@@ -182,15 +210,20 @@ class ChatController extends GetxController {
 
               final userModel = UserModel.fromJson(userData);
 
-              return ChatUserModel.fromJson(
-                data,
-                user: userModel,
-              ).copyWith(unreadCount: unreadCount);
+              return ChatUserModel.fromJson(data, user: userModel);
             }),
           );
 
           return chatList;
         });
+  }
+
+  Future<void> resetUnreadCount(String chatId, String userId) async {
+    final chatDocRef = chatUsersRef
+        .doc(userId)
+        .collection(chatUsersCollec)
+        .doc(chatId);
+    await chatDocRef.update({'unreadCount': 0});
   }
 
   Future<void> markMessagesAsRead(String chatId, String currentUserId) async {
@@ -233,53 +266,169 @@ class ChatController extends GetxController {
     required String message,
     String? voiceUrl,
   }) async {
+    final now = FieldValue.serverTimestamp();
     final groupRef = firestore.collection('groups').doc(groupId);
 
-    // Send the message
-    await groupRef.collection('messages').add({
+    // Add new message to the group's messages collection
+    final newMessageRef = groupRef.collection('messages').doc();
+    await newMessageRef.set({
       'senderId': senderId,
       'senderName': senderName,
       'senderImage': senderImage,
       'text': message,
       'voiceUrl': voiceUrl,
-      'timestamp': FieldValue.serverTimestamp(),
-      'readBy': [senderId],
+      'timestamp': now,
+      'readBy': [senderId], // sender has already "read" it
     });
 
-    // Get group members
+    // Fetch group data (members + name)
     final groupDoc = await groupRef.get();
-    final members = List<String>.from(groupDoc['members']);
+    if (!groupDoc.exists) return;
 
-    // Get token for all members except sender
+    final members = List<String>.from(groupDoc.data()?['members'] ?? []);
+    final groupName = groupDoc.data()?['name'] ?? 'Group Chat';
+
+    // Create a batch to update unread counts
+    final batch = firestore.batch();
+
     for (final uid in members) {
-      if (uid == senderId) continue;
+      final memberRef = groupRef.collection('members').doc(uid);
 
-      final userDoc =
-          await FirebaseFirestore.instance.collection('Users').doc(uid).get();
-      final token = userDoc['fcmToken'];
+      if (uid == senderId) {
+        // Sender's unread count should reset to 0
+        batch.set(memberRef, {'unreadCount': 0}, SetOptions(merge: true));
+      } else {
+        // Increment unread count for each other member
+        batch.set(memberRef, {
+          'unreadCount': FieldValue.increment(1),
+          'lastMessage': message.isNotEmpty ? message : '🎤 Voice message',
+          'lastMessageTimestamp': now,
+        }, SetOptions(merge: true));
+      }
+    }
+
+    await batch.commit();
+
+    // Send FCM notifications to all members except sender
+    final notificationTasks = members.where((uid) => uid != senderId).map((
+      uid,
+    ) async {
+      final userDoc = await firestore.collection('Users').doc(uid).get();
+      final token = userDoc.data()?['fcmToken'];
 
       if (token != null && token.toString().isNotEmpty) {
         await NotificationServices().sendFCMNotification(
           token: token,
-          title: groupDoc['name'],
-          body: "$senderName: $message",
+          title: groupName,
+          body:
+              message.isNotEmpty
+                  ? "$senderName: $message"
+                  : "$senderName sent a voice message",
         );
       }
-    }
+    });
+
+    await Future.wait(notificationTasks);
   }
 
-  /// Listen to chat messages ordered by time, descending
+  // /// Listen to chat messages ordered by time, descending
   Stream<List<GroupMessagesModel>> chatStream(String groupId) {
     return firestore
         .collection('groups')
         .doc(groupId)
         .collection('messages')
-        .orderBy('timeStamp', descending: true) // ✅ fixed field name
+        .orderBy('timestamp', descending: true) // ✅ fixed field name
         .snapshots()
         .map(
           (snap) =>
               snap.docs.map((doc) => GroupMessagesModel.fromDoc(doc)).toList(),
         );
+  }
+
+  final RxList<GroupMessagesModel> _groupMsgList = <GroupMessagesModel>[].obs;
+  RxList<GroupMessagesModel> get groupMsgList => _groupMsgList;
+
+  DocumentSnapshot? lastGroupMsgDoc;
+  RxBool isLoadingMoreGroupMsgs = false.obs;
+  RxBool isInitialGroupLoading = true.obs;
+  bool hasMoreGroup = false;
+  StreamSubscription? _groupRealtimeSub;
+
+  /// Real-time listener for latest group messages
+  void listenToGroupMessages(String groupId) {
+    _groupRealtimeSub?.cancel();
+
+    _groupRealtimeSub = firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .snapshots()
+        .listen((snapshot) {
+          for (var change in snapshot.docChanges) {
+            final newMsg = GroupMessagesModel.fromDoc(change.doc);
+
+            if (change.type == DocumentChangeType.added) {
+              if (_groupMsgList.isEmpty ||
+                  _groupMsgList.first.id != newMsg.id) {
+                _groupMsgList.insert(0, newMsg);
+              }
+            } else if (change.type == DocumentChangeType.modified) {
+              final index = _groupMsgList.indexWhere((m) => m.id == newMsg.id);
+              if (index != -1) {
+                _groupMsgList[index] =
+                    newMsg; // update timestamp and other fields
+              }
+            }
+          }
+        });
+  }
+
+  /// Pagination for older group messages
+  Future<void> getGroupMessages({
+    required String groupId,
+    int limit = 12,
+  }) async {
+    if (isLoadingMoreGroupMsgs.value) return;
+
+    isLoadingMoreGroupMsgs.value = true;
+
+    Query query = firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .limit(limit);
+
+    if (lastGroupMsgDoc != null) {
+      query = query.startAfterDocument(lastGroupMsgDoc!);
+    }
+
+    QuerySnapshot querySnapshot = await query.get();
+    final newMessages =
+        querySnapshot.docs
+            .map((doc) => GroupMessagesModel.fromDoc(doc))
+            .toList();
+
+    _groupMsgList.addAll(newMessages);
+    lastGroupMsgDoc =
+        querySnapshot.docs.isNotEmpty
+            ? querySnapshot.docs.last
+            : lastGroupMsgDoc;
+    hasMoreGroup = querySnapshot.docs.length == limit;
+
+    isLoadingMoreGroupMsgs.value = false;
+    isInitialGroupLoading.value = false;
+  }
+
+  /// Refresh/reset group chat state
+  void refreshGroupChat(String groupId) {
+    _groupMsgList.clear();
+    isInitialGroupLoading.value = true;
+    lastGroupMsgDoc = null;
+    hasMoreGroup = false;
+    _groupRealtimeSub?.cancel();
   }
 
   /// Retrieve all groups the current user is part of
@@ -293,20 +442,30 @@ class ChatController extends GetxController {
             snap.docs.map((doc) async {
               final group = GroupModel.fromMap(doc);
 
-              // Fetch unread count from messages subcollection
-              final unreadSnapshot =
+              // Fetch unreadCount from the members subcollection for this user
+              final memberDoc =
                   await firestore
                       .collection('groups')
-                      .doc(group.id)
-                      .collection('messages')
-                      .where('readBy', whereNotIn: [userId])
+                      .doc(doc.id)
+                      .collection('members')
+                      .doc(userId)
                       .get();
 
-              final unreadCount = unreadSnapshot.docs.length;
+              final unreadCount = memberDoc.data()?['unreadCount'] ?? 0;
 
+              // Return GroupModel with unreadCount included
               return group.copyWith(unReadCount: unreadCount);
             }),
           );
         });
+  }
+
+  Future<void> resetGroupUnread(String groupId, String userId) async {
+    await firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('members')
+        .doc(userId)
+        .update({'unreadCount': 0});
   }
 }

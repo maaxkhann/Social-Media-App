@@ -27,7 +27,19 @@ class _ChatViewState extends State<ChatView> {
       chatController.auth.currentUser!.uid,
       Get.arguments[0],
     );
-    chatController.getMessages(chatId: chatId);
+
+    chatController.refreshChat();
+
+    // Initial paginated load
+    chatController.getMessages(chatId: chatId).then((_) {
+      // After initial load, start listening for real-time new messages
+      chatController.listenToMessages(chatId);
+    });
+    chatController.resetUnreadCount(
+      chatId,
+      chatController.auth.currentUser!.uid,
+    );
+
     scrollController.addListener(_onScroll);
     super.initState();
   }
@@ -52,15 +64,16 @@ class _ChatViewState extends State<ChatView> {
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        appBar: ChatAppBar(),
+        appBar: ChatAppBar(otherUserId: Get.arguments[0]),
         body: Column(
           children: [
             Expanded(
               child: Obx(() {
-                final messages = chatController.msgList;
                 if (chatController.isInitialLoading.value) {
                   return const Center(child: CircularProgressIndicator());
                 }
+                final messages = chatController.msgList;
+
                 // final messages = snapshot.data!;
                 // Mark unread messages as read if they're not sent by me
                 final unread =
