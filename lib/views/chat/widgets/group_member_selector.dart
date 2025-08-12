@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:social_media/components/custom_textfield.dart';
+import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/chat_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
@@ -28,11 +30,14 @@ class _GroupMemberSelectorState extends State<GroupMemberSelector> {
     return SafeArea(
       child: Column(
         children: [
-          TextField(
-            controller: groupNameCtrl,
-            decoration: InputDecoration(labelText: "Group Name"),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: CustomTextField(
+              controller: groupNameCtrl,
+              hintText: 'Group Name',
+            ),
           ),
-          20.spaceY,
+
           Obx(() {
             if (selectedUserIds.isEmpty) return SizedBox();
             return Container(
@@ -54,9 +59,9 @@ class _GroupMemberSelectorState extends State<GroupMemberSelector> {
                               backgroundImage: NetworkImage(user?.image ?? ''),
                             ),
                             4.spaceY,
-                            Text(
-                              user?.name?.split(' ').first ?? '',
-                              style: TextStyle(fontSize: 10),
+                            CustomText(
+                              title: user?.name?.split(' ').first ?? '',
+                              size: 10,
                             ),
                           ],
                         ),
@@ -81,7 +86,7 @@ class _GroupMemberSelectorState extends State<GroupMemberSelector> {
                     leading: CircleAvatar(
                       backgroundImage: NetworkImage(user.image ?? ''),
                     ),
-                    title: Text(user.name ?? ''),
+                    title: CustomText(title: user.name ?? ''),
                     trailing: Checkbox(
                       value: isSelected,
                       onChanged: (value) {
@@ -99,6 +104,7 @@ class _GroupMemberSelectorState extends State<GroupMemberSelector> {
             }),
           ),
           20.spaceY,
+
           ElevatedButton(
             onPressed:
                 selectedUserIds.isNotEmpty && groupNameCtrl.text.isNotEmpty
@@ -117,7 +123,7 @@ class _GroupMemberSelectorState extends State<GroupMemberSelector> {
                       Get.back(result: docRef.id);
                     }
                     : null,
-            child: Text("Create"),
+            child: CustomText(title: "Create"),
           ),
         ],
       ),

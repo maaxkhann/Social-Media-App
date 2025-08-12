@@ -6,10 +6,8 @@ import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_spacing.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/auth_controller.dart';
-import 'package:social_media/extensions/build_context.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/routes/app_routes.dart';
-import 'package:social_media/views/auth/register_view.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});

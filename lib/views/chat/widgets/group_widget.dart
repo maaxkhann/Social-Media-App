@@ -54,24 +54,69 @@ class _GroupWidgetState extends State<GroupWidget> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: StreamBuilder(
+                    child: StreamBuilder<List<GroupMessagesModel>>(
                       stream: chatController.chatStream(group.id),
                       builder: (context, snap) {
-                        final lastMsg =
-                            snap.data?.first ?? GroupMessagesModel();
+                        if (snap.connectionState == ConnectionState.waiting) {
+                          // Show a loader or placeholder while waiting for data
+                          return const SizedBox(
+                            height: 50,
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+
+                        if (!snap.hasData || snap.data!.isEmpty) {
+                          // No messages yet — show group info without last message preview
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CircleAvatar(
+                                radius: 25,
+                                foregroundImage: NetworkImage(
+                                  "https://ui-avatars.com/api/?name=${Uri.encodeComponent(group.name)}&background=random",
+                                ),
+                              ),
+                              12.spaceX,
+                              Expanded(
+                                flex: 8,
+                                child: Text(
+                                  group.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const Spacer(),
+                              // Optionally show a placeholder for time and unread count
+                              if ((group.unReadCount) > 0)
+                                CircleAvatar(
+                                  radius: 10,
+                                  backgroundColor: AppColors.yellow,
+                                  child: Text(
+                                    group.unReadCount.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.white,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        }
+
+                        // If messages are present, show last message details
+                        final lastMsg = snap.data!.first;
 
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 25,
-                                  foregroundImage: NetworkImage(
-                                    "https://ui-avatars.com/api/?name=${Uri.encodeComponent(group.name)}&background=random",
-                                  ),
-                                ),
-                              ],
+                            CircleAvatar(
+                              radius: 25,
+                              foregroundImage: NetworkImage(
+                                "https://ui-avatars.com/api/?name=${Uri.encodeComponent(group.name)}&background=random",
+                              ),
                             ),
                             12.spaceX,
                             Expanded(
@@ -79,17 +124,20 @@ class _GroupWidgetState extends State<GroupWidget> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CustomText(
-                                    title: group.name,
-                                    size: 13,
-                                    fontWeight: FontWeight.w700,
+                                  Text(
+                                    group.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  CustomText(
-                                    title:
-                                        (lastMsg.text?.isNotEmpty ?? false)
-                                            ? "${lastMsg.senderName}: ${lastMsg.text}"
-                                            : "${lastMsg.senderName}: Voice message",
-                                    size: 11,
+                                  Text(
+                                    (lastMsg.text?.isNotEmpty ?? false)
+                                        ? "${lastMsg.senderName}: ${lastMsg.text}"
+                                        : "${lastMsg.senderName}: Voice message",
+                                    style: const TextStyle(fontSize: 11),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
@@ -97,28 +145,30 @@ class _GroupWidgetState extends State<GroupWidget> {
                             const Spacer(),
                             Column(
                               children: [
-                                // Optional: You can add a time stamp here if needed
                                 5.spaceY,
-                                CustomText(
-                                  title:
-                                      lastMsg.timeStamp != null
-                                          ? TimeOfDay.fromDateTime(
-                                            lastMsg.timeStamp!,
-                                          ).format(context)
-                                          : '',
-                                  size: 10,
-                                  color: AppColors.yellow,
-                                  fontWeight: FontWeight.w700,
+                                Text(
+                                  lastMsg.timeStamp != null
+                                      ? TimeOfDay.fromDateTime(
+                                        lastMsg.timeStamp!,
+                                      ).format(context)
+                                      : '',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.yellow,
+                                  ),
                                 ),
                                 5.spaceY,
                                 if ((group.unReadCount) > 0)
                                   CircleAvatar(
                                     radius: 10,
                                     backgroundColor: AppColors.yellow,
-                                    child: CustomText(
-                                      title: group.unReadCount.toString(),
-                                      size: 12,
-                                      color: AppColors.white,
+                                    child: Text(
+                                      group.unReadCount.toString(),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.white,
+                                      ),
                                     ),
                                   ),
                               ],
