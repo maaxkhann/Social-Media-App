@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_media/constants/app_colors.dart';
+import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/views/chat/widgets/group_member_selector.dart';
 
@@ -33,10 +34,8 @@ class MessageAppBar extends StatelessWidget {
               itemBuilder:
                   (context) => [
                     PopupMenuItem(
-                      child: GestureDetector(
-                        onTap: () => Get.to(() => GroupMemberSelector()),
-                        child: Text('Create group'),
-                      ),
+                      onTap: () => Get.to(() => GroupMemberSelector()),
+                      child: CustomText(title: 'Create group'),
                     ),
                   ],
             ),

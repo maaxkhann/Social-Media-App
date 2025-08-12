@@ -48,10 +48,6 @@ class _GroupChatPageState extends State<GroupChatPage> {
         widget.groupId,
       ); // start realtime updates
     });
-    chatController.resetGroupUnread(
-      widget.groupId,
-      chatController.auth.currentUser!.uid,
-    );
 
     // Scroll listener for pagination
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -103,13 +99,14 @@ class _GroupChatPageState extends State<GroupChatPage> {
                 }
               }
 
-              return ListView.builder(
+              return ListView.separated(
                 reverse: true,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 18,
                   vertical: 18,
                 ),
                 itemCount: messages.length + 1,
+                separatorBuilder: (context, index) => 18.spaceY,
                 itemBuilder: (context, index) {
                   if (index == messages.length) {
                     return Center(

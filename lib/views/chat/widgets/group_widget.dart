@@ -51,20 +51,18 @@ class _GroupWidgetState extends State<GroupWidget> {
                         groupName: group.name,
                       ),
                     );
+                    chatController
+                        .resetGroupUnread(
+                          group.id,
+                          chatController.auth.currentUser!.uid,
+                        )
+                        .then((_) => setState(() {}));
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: StreamBuilder<List<GroupMessagesModel>>(
                       stream: chatController.chatStream(group.id),
                       builder: (context, snap) {
-                        if (snap.connectionState == ConnectionState.waiting) {
-                          // Show a loader or placeholder while waiting for data
-                          return const SizedBox(
-                            height: 50,
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-
                         if (!snap.hasData || snap.data!.isEmpty) {
                           // No messages yet — show group info without last message preview
                           return Row(
@@ -79,13 +77,13 @@ class _GroupWidgetState extends State<GroupWidget> {
                               12.spaceX,
                               Expanded(
                                 flex: 8,
-                                child: Text(
-                                  group.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                                child: CustomText(
+                                  title: group.name,
+
+                                  fontWeight: FontWeight.bold,
+                                  size: 13,
+
+                                  txtOverFlow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const Spacer(),
@@ -94,12 +92,11 @@ class _GroupWidgetState extends State<GroupWidget> {
                                 CircleAvatar(
                                   radius: 10,
                                   backgroundColor: AppColors.yellow,
-                                  child: Text(
-                                    group.unReadCount.toString(),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.white,
-                                    ),
+                                  child: CustomText(
+                                    title: group.unReadCount.toString(),
+
+                                    size: 12,
+                                    color: AppColors.white,
                                   ),
                                 ),
                             ],
@@ -124,20 +121,21 @@ class _GroupWidgetState extends State<GroupWidget> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    group.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                                  CustomText(
+                                    title: group.name,
+
+                                    fontWeight: FontWeight.bold,
+                                    size: 13,
+
+                                    txtOverFlow: TextOverflow.ellipsis,
                                   ),
-                                  Text(
-                                    (lastMsg.text?.isNotEmpty ?? false)
-                                        ? "${lastMsg.senderName}: ${lastMsg.text}"
-                                        : "${lastMsg.senderName}: Voice message",
-                                    style: const TextStyle(fontSize: 11),
-                                    overflow: TextOverflow.ellipsis,
+                                  CustomText(
+                                    title:
+                                        (lastMsg.text?.isNotEmpty ?? false)
+                                            ? "${lastMsg.senderName}: ${lastMsg.text}"
+                                            : "${lastMsg.senderName}: Voice message",
+                                    size: 11,
+                                    txtOverFlow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
@@ -146,29 +144,27 @@ class _GroupWidgetState extends State<GroupWidget> {
                             Column(
                               children: [
                                 5.spaceY,
-                                Text(
-                                  lastMsg.timeStamp != null
-                                      ? TimeOfDay.fromDateTime(
-                                        lastMsg.timeStamp!,
-                                      ).format(context)
-                                      : '',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.yellow,
-                                  ),
+                                CustomText(
+                                  title:
+                                      lastMsg.timeStamp != null
+                                          ? TimeOfDay.fromDateTime(
+                                            lastMsg.timeStamp!,
+                                          ).format(context)
+                                          : '',
+
+                                  size: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.yellow,
                                 ),
                                 5.spaceY,
                                 if ((group.unReadCount) > 0)
                                   CircleAvatar(
                                     radius: 10,
                                     backgroundColor: AppColors.yellow,
-                                    child: Text(
-                                      group.unReadCount.toString(),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: AppColors.white,
-                                      ),
+                                    child: CustomText(
+                                      title: group.unReadCount.toString(),
+                                      size: 12,
+                                      color: AppColors.white,
                                     ),
                                   ),
                               ],
