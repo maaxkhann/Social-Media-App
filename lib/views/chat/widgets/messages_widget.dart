@@ -35,7 +35,8 @@ class _MessagesWidgetState extends State<MessagesWidget>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.inactive) {
       _setOnlineStatus(false); // app in background
     } else if (state == AppLifecycleState.resumed) {
       _setOnlineStatus(true); // app resumed
