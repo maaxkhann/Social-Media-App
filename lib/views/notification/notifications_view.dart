@@ -132,13 +132,13 @@ class NotificationsView extends StatelessWidget {
   String buildNotificationMessage(NotificationModel notification) {
     switch (notification.type) {
       case 'like':
-        return notification.message!;
+        return ' ${notification.message!}';
       case 'like_comment':
-        return notification.message!;
+        return ' ${notification.message!}';
       case 'comment':
-        return notification.message!;
+        return ' ${notification.message!}';
       case 'reply':
-        return notification.message!;
+        return ' ${notification.message!}';
       case 'follow':
         return ' ${notification.message!}';
       case 'unfollow':
