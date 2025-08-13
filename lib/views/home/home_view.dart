@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_media/components/stories_widget.dart';
-import 'package:social_media/constants/app_colors.dart';
 import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/post_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
-import 'package:social_media/models/post_model.dart';
+import 'package:social_media/services/notification_service.dart';
 import 'package:social_media/views/home/widgets/home_posts_widget.dart';
 
 class HomeView extends StatefulWidget {
@@ -24,7 +23,12 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
+    upadateToken();
     scrollController.addListener(_onScroll);
+  }
+
+  upadateToken() async {
+    await NotificationServices().saveDeviceTokenToFirestore();
   }
 
   void _onScroll() {

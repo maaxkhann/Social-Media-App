@@ -147,60 +147,63 @@ class _GroupChatPageState extends State<GroupChatPage> {
                           backgroundImage: NetworkImage(msg.senderImage ?? ''),
                         ),
                       if (!isMe) 8.spaceX,
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  isMe
-                                      ? AppColors.blue
-                                      : AppColors.lightShadeGrey,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (isVoice)
-                                  VoiceMessageWidget(url: msg.voiceUrl ?? '')
-                                else
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    isMe
+                                        ? AppColors.blue
+                                        : AppColors.lightShadeGrey,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isVoice)
+                                    VoiceMessageWidget(url: msg.voiceUrl ?? '')
+                                  else
+                                    CustomText(
+                                      title: msg.text ?? '',
+                                      size: 11,
+                                      height: 1.2,
+                                      color:
+                                          isMe
+                                              ? AppColors.white
+                                              : AppColors.black.withAlpha(200),
+                                    ),
+                                  4.spaceY,
                                   CustomText(
-                                    title: msg.text ?? '',
-                                    size: 11,
+                                    title: formattedTime,
+                                    size: 10,
                                     color:
                                         isMe
                                             ? AppColors.white
                                             : AppColors.black.withAlpha(200),
                                   ),
-                                2.spaceY,
-                                CustomText(
-                                  title: formattedTime,
-                                  size: 10,
-                                  color:
-                                      isMe
-                                          ? AppColors.white
-                                          : AppColors.black.withAlpha(200),
-                                ),
-                              ],
-                            ),
-                          ),
-                          2.spaceY,
-                          if (isMe)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 2),
-                              child: Icon(
-                                Icons.check,
-                                size: 12,
-                                color:
-                                    isRead ? AppColors.blue : AppColors.black,
+                                ],
                               ),
                             ),
-                        ],
+                            2.spaceY,
+                            if (isMe)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 2),
+                                child: Icon(
+                                  Icons.check,
+                                  size: 12,
+                                  color:
+                                      isRead ? AppColors.blue : AppColors.black,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ],
                   );

@@ -135,6 +135,7 @@ class _GroupWidgetState extends State<GroupWidget> {
                                             ? "${lastMsg.senderName}: ${lastMsg.text}"
                                             : "${lastMsg.senderName}: Voice message",
                                     size: 11,
+                                    maxLine: 2,
                                     txtOverFlow: TextOverflow.ellipsis,
                                   ),
                                 ],

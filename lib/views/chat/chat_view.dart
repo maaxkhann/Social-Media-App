@@ -158,6 +158,7 @@ class _ChatViewState extends State<ChatView> {
                                   CustomText(
                                     title: message.text,
                                     size: 11,
+                                    height: 1.2,
                                     color:
                                         isMine
                                             ? AppColors.white

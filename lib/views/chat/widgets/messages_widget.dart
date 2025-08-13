@@ -79,6 +79,7 @@ class _MessagesWidgetState extends State<MessagesWidget> {
                                     (chatUser.lastMessage?.isNotEmpty ?? false)
                                         ? chatUser.lastMessage!
                                         : 'voice message',
+                                maxLine: 1,
                                 size: 11,
                               ),
                             ],

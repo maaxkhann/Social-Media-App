@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get.dart';
 import 'package:social_media/models/chat_model.dart';
 import 'package:social_media/models/chat_user_model.dart';
@@ -99,18 +100,22 @@ class ChatController extends GetxController {
             'isGroup': false,
           })
           .then((val) async {
+            final currentToken = await FirebaseMessaging.instance.getToken();
             final userData =
                 await firestore.collection('Users').doc(otherUserId).get();
             final currentUser =
                 await firestore.collection('Users').doc(currentUserId).get();
-            await NotificationServices().sendFCMNotification(
-              token: userData.data()?['fcmToken'],
-              title: currentUser.data()?['name'] ?? 'unknown',
-              body:
-                  messageText.isNotEmpty
-                      ? messageText
-                      : 'sent you voice message',
-            );
+            if (userData.data()?['fcmToken'] != null &&
+                userData.data()?['fcmToken'] != currentToken) {
+              await NotificationServices().sendFCMNotification(
+                token: userData.data()?['fcmToken'],
+                title: currentUser.data()?['name'] ?? 'unknown',
+                body:
+                    messageText.isNotEmpty
+                        ? messageText
+                        : 'sent you voice message',
+              );
+            }
           });
     }
   }
@@ -269,7 +274,7 @@ class ChatController extends GetxController {
     final now = FieldValue.serverTimestamp();
     final groupRef = firestore.collection('groups').doc(groupId);
 
-    // Add new message to the group's messages collection
+    // Add new message to group's messages collection
     final newMessageRef = groupRef.collection('messages').doc();
     await newMessageRef.set({
       'senderId': senderId,
@@ -278,27 +283,23 @@ class ChatController extends GetxController {
       'text': message,
       'voiceUrl': voiceUrl,
       'timestamp': now,
-      'readBy': [senderId], // sender has already "read" it
+      'readBy': [senderId],
     });
 
-    // Fetch group data (members + name)
+    // Fetch group data
     final groupDoc = await groupRef.get();
     if (!groupDoc.exists) return;
 
     final members = List<String>.from(groupDoc.data()?['members'] ?? []);
     final groupName = groupDoc.data()?['name'] ?? 'Group Chat';
 
-    // Create a batch to update unread counts
+    // Batch update unread counts
     final batch = firestore.batch();
-
     for (final uid in members) {
       final memberRef = groupRef.collection('members').doc(uid);
-
       if (uid == senderId) {
-        // Sender's unread count should reset to 0
         batch.set(memberRef, {'unreadCount': 0}, SetOptions(merge: true));
       } else {
-        // Increment unread count for each other member
         batch.set(memberRef, {
           'unreadCount': FieldValue.increment(1),
           'lastMessage': message.isNotEmpty ? message : '🎤 Voice message',
@@ -306,17 +307,22 @@ class ChatController extends GetxController {
         }, SetOptions(merge: true));
       }
     }
-
     await batch.commit();
 
-    // Send FCM notifications to all members except sender
+    // Get current device token to avoid self-notifications
+    final currentDeviceToken = await FirebaseMessaging.instance.getToken();
+
+    // Send notifications only to other devices
     final notificationTasks = members.where((uid) => uid != senderId).map((
       uid,
     ) async {
       final userDoc = await firestore.collection('Users').doc(uid).get();
       final token = userDoc.data()?['fcmToken'];
 
-      if (token != null && token.toString().isNotEmpty) {
+      // Skip if token is null/empty or same as sender's device token
+      if (token != null &&
+          token.toString().isNotEmpty &&
+          token != currentDeviceToken) {
         await NotificationServices().sendFCMNotification(
           token: token,
           title: groupName,
