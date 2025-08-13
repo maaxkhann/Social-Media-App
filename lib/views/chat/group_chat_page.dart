@@ -6,6 +6,7 @@ import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/chat_controller.dart';
 import 'package:social_media/controllers/profile_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
+import 'package:social_media/shared/timestamp_helper.dart';
 import 'package:social_media/views/chat/widgets/chat_appbar.dart';
 import 'package:social_media/views/chat/widgets/chat_bottombar.dart';
 import 'package:social_media/views/chat/widgets/voice_message_widget.dart';
@@ -132,78 +133,129 @@ class _GroupChatPageState extends State<GroupChatPage> {
                             msg.timeStamp!,
                           ).format(context)
                           : '';
+                  final time = msg.timeStamp;
+
+                  // Show date label if first message or day changed
+                  String? dateLabel;
+                  if (time != null) {
+                    // Show label if first message (in reversed list) or day is different from previous message
+                    if (index == messages.length - 1 ||
+                        (messages[index + 1].timeStamp as Timestamp?)
+                                ?.toDate()
+                                .day !=
+                            time.day) {
+                      dateLabel = TimeStampHelper.getMessageDateLabel(time);
+                    }
+                  }
 
                   final isVoice =
                       (msg.voiceUrl != null && msg.voiceUrl!.isNotEmpty);
 
-                  return Row(
-                    mainAxisAlignment:
-                        isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  return Column(
                     children: [
-                      if (!isMe)
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundImage: NetworkImage(msg.senderImage ?? ''),
-                        ),
-                      if (!isMe) 8.spaceX,
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Container(
+                      if (dateLabel != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Center(
+                            child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 8,
+                                horizontal: 12,
+                                vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color:
-                                    isMe
-                                        ? AppColors.blue
-                                        : AppColors.lightShadeGrey,
+                                color: AppColors.lightShadeGrey,
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (isVoice)
-                                    VoiceMessageWidget(url: msg.voiceUrl ?? '')
-                                  else
-                                    CustomText(
-                                      title: msg.text ?? '',
-                                      size: 11,
-                                      height: 1.2,
-                                      color:
-                                          isMe
-                                              ? AppColors.white
-                                              : AppColors.black.withAlpha(200),
-                                    ),
-                                  4.spaceY,
-                                  CustomText(
-                                    title: formattedTime,
-                                    size: 10,
-                                    color:
-                                        isMe
-                                            ? AppColors.white
-                                            : AppColors.black.withAlpha(200),
-                                  ),
-                                ],
+                              child: CustomText(
+                                title: dateLabel,
+                                size: 10,
+                                color: AppColors.black.withAlpha(150),
                               ),
                             ),
-                            2.spaceY,
-                            if (isMe)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 2),
-                                child: Icon(
-                                  Icons.check,
-                                  size: 12,
-                                  color:
-                                      isRead ? AppColors.blue : AppColors.black,
-                                ),
-                              ),
-                          ],
+                          ),
                         ),
+                      Row(
+                        mainAxisAlignment:
+                            isMe
+                                ? MainAxisAlignment.end
+                                : MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (!isMe)
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundImage: NetworkImage(
+                                msg.senderImage ?? '',
+                              ),
+                            ),
+                          if (!isMe) 8.spaceX,
+                          Flexible(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isMe
+                                            ? AppColors.blue
+                                            : AppColors.lightShadeGrey,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (isVoice)
+                                        VoiceMessageWidget(
+                                          url: msg.voiceUrl ?? '',
+                                        )
+                                      else
+                                        CustomText(
+                                          title: msg.text ?? '',
+                                          size: 11,
+                                          height: 1.2,
+                                          color:
+                                              isMe
+                                                  ? AppColors.white
+                                                  : AppColors.black.withAlpha(
+                                                    200,
+                                                  ),
+                                        ),
+                                      4.spaceY,
+                                      CustomText(
+                                        title: formattedTime,
+                                        size: 10,
+                                        color:
+                                            isMe
+                                                ? AppColors.white
+                                                : AppColors.black.withAlpha(
+                                                  200,
+                                                ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                2.spaceY,
+                                if (isMe)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 2),
+                                    child: Icon(
+                                      Icons.check,
+                                      size: 12,
+                                      color:
+                                          isRead
+                                              ? AppColors.blue
+                                              : AppColors.black,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   );

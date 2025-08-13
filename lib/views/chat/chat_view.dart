@@ -6,6 +6,7 @@ import 'package:social_media/constants/app_text.dart';
 import 'package:social_media/controllers/chat_controller.dart';
 import 'package:social_media/extensions/sized_box.dart';
 import 'package:social_media/models/chat_model.dart';
+import 'package:social_media/shared/timestamp_helper.dart';
 import 'package:social_media/views/chat/widgets/chat_appbar.dart';
 import 'package:social_media/views/chat/widgets/chat_bottombar.dart';
 import 'package:social_media/views/chat/widgets/voice_message_widget.dart';
@@ -123,73 +124,114 @@ class _ChatViewState extends State<ChatView> {
                     final isVoice =
                         message.voiceUrl != null &&
                         message.voiceUrl!.isNotEmpty;
-
                     final time = (message.timestamp as Timestamp?)?.toDate();
                     final formattedTime =
                         time != null
                             ? TimeOfDay.fromDateTime(time).format(context)
                             : '';
 
-                    return Align(
-                      alignment:
-                          isMine ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isVoice ? 4 : 8,
-                              vertical: isVoice ? 4 : 8,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color:
-                                  isMine
-                                      ? AppColors.blue
-                                      : AppColors.lightShadeGrey,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (isVoice)
-                                  VoiceMessageWidget(url: message.voiceUrl!)
-                                else
-                                  CustomText(
-                                    title: message.text,
-                                    size: 11,
-                                    height: 1.2,
-                                    color:
-                                        isMine
-                                            ? AppColors.white
-                                            : AppColors.black.withAlpha(200),
-                                  ),
-                                2.spaceY,
-                                CustomText(
-                                  title: formattedTime,
-                                  size: 10,
-                                  color:
-                                      isMine
-                                          ? AppColors.white
-                                          : AppColors.black.withAlpha(200),
+                    // Show date label if first message or day changed
+                    String? dateLabel;
+                    if (time != null) {
+                      // Show label if first message (in reversed list) or day is different from previous message
+                      if (index == messages.length - 1 ||
+                          (messages[index + 1].timestamp as Timestamp?)
+                                  ?.toDate()
+                                  .day !=
+                              time.day) {
+                        dateLabel = TimeStampHelper.getMessageDateLabel(time);
+                      }
+                    }
+
+                    return Column(
+                      children: [
+                        if (dateLabel != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
                                 ),
-                              ],
-                            ),
-                          ),
-                          if (isMine)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 2),
-                              child: Icon(
-                                Icons.check,
-                                size: 12,
-                                color:
-                                    message.read
-                                        ? AppColors.blue
-                                        : AppColors.black,
+                                decoration: BoxDecoration(
+                                  color: AppColors.lightShadeGrey,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: CustomText(
+                                  title: dateLabel,
+                                  size: 10,
+                                  color: AppColors.black.withAlpha(150),
+                                ),
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                        Align(
+                          alignment:
+                              isMine
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isVoice ? 4 : 8,
+                                  vertical: isVoice ? 4 : 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color:
+                                      isMine
+                                          ? AppColors.blue
+                                          : AppColors.lightShadeGrey,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isVoice)
+                                      VoiceMessageWidget(url: message.voiceUrl!)
+                                    else
+                                      CustomText(
+                                        title: message.text,
+                                        size: 11,
+                                        height: 1.2,
+                                        color:
+                                            isMine
+                                                ? AppColors.white
+                                                : AppColors.black.withAlpha(
+                                                  200,
+                                                ),
+                                      ),
+                                    2.spaceY,
+                                    CustomText(
+                                      title: formattedTime,
+                                      size: 10,
+                                      color:
+                                          isMine
+                                              ? AppColors.white
+                                              : AppColors.black.withAlpha(200),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isMine)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 2),
+                                  child: Icon(
+                                    Icons.check,
+                                    size: 12,
+                                    color:
+                                        message.read
+                                            ? AppColors.blue
+                                            : AppColors.black,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     );
                   },
                 );

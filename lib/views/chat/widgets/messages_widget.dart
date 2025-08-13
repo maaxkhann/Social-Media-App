@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_media/constants/app_colors.dart';
@@ -13,8 +14,34 @@ class MessagesWidget extends StatefulWidget {
   State<MessagesWidget> createState() => _MessagesWidgetState();
 }
 
-class _MessagesWidgetState extends State<MessagesWidget> {
+class _MessagesWidgetState extends State<MessagesWidget>
+    with WidgetsBindingObserver {
   final chatController = Get.put(ChatController());
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _setOnlineStatus(true); // user opened the app
+  }
+
+  void _setOnlineStatus(bool status) async {
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(chatController.auth.currentUser!.uid)
+        .update({'isOnline': status});
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _setOnlineStatus(false); // app in background
+    } else if (state == AppLifecycleState.resumed) {
+      _setOnlineStatus(true); // app resumed
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -43,25 +70,36 @@ class _MessagesWidgetState extends State<MessagesWidget> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Stack(
-                          children: [
-                            CircleAvatar(
-                              radius: 25,
-                              foregroundImage: NetworkImage(
-                                chatUser.user?.image ??
-                                    'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                              ),
-                            ),
+                        StreamBuilder<DocumentSnapshot>(
+                          stream:
+                              FirebaseFirestore.instance
+                                  .collection('Users')
+                                  .doc(chatUser.otherUserId)
+                                  .snapshots(),
+                          builder: (context, snapshot) {
+                            final isOnline =
+                                snapshot.data?.get('isOnline') ?? false;
 
-                            Positioned(
-                              bottom: 5,
-                              right: 1,
-                              child: CircleAvatar(
-                                radius: 6,
-                                backgroundColor: AppColors.yellow,
-                              ),
-                            ),
-                          ],
+                            return Stack(
+                              children: [
+                                CircleAvatar(
+                                  radius: 25,
+                                  foregroundImage: NetworkImage(
+                                    chatUser.user?.image ?? 'default_image_url',
+                                  ),
+                                ),
+                                if (isOnline)
+                                  Positioned(
+                                    bottom: 5,
+                                    right: 1,
+                                    child: CircleAvatar(
+                                      radius: 6,
+                                      backgroundColor: AppColors.yellow,
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
                         ),
                         12.spaceX,
                         Expanded(
