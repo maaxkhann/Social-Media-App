@@ -45,7 +45,7 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       body: Obx(() {
         final posts = postController.posts;
-        if (postController.isPostsLoading.value) {
+        if (postController.isPostsLoading.value && posts.isNotEmpty) {
           return Center(child: CircularProgressIndicator());
         }
 

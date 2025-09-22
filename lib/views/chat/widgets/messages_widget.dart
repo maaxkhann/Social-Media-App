@@ -48,8 +48,11 @@ class _MessagesWidgetState extends State<MessagesWidget>
     return StreamBuilder(
       stream: chatController.getUserChats(chatController.auth.currentUser!.uid),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: const CustomText(title: "No data"));
         }
         return ListView.separated(
           itemCount: snapshot.data!.length,
